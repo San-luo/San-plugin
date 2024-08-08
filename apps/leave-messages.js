@@ -1,6 +1,7 @@
 //import plugin from '../../lib/plugins/plugin.js'
 //导出  类  类名:要与文件名一致 继承  插件类  
 import * as tool from '../models/tool.js';
+const master = tool.masterQQ()//获取主人QQ
  export class Helloworld extends plugin {
     constructor() {
         super({
@@ -23,11 +24,12 @@ import * as tool from '../models/tool.js';
    
     //函数
     async liuyan(e) {
-        const master = tool.masterQQ()//获取主人QQ
+
         /** 设置上下文，后续接收到内容会执行hei方法 */
         this.setContext('hei');
+        logger.info(e)
         let xinxi = [
-            "发送对象："+Bot.pickFriend(master).nickname+master,
+            "发送对象："+Bot.fl.get(tool.masterQQ()).nickname+master,
             segment.image(Bot.pickUser(master).getAvatarUrl()),
             "请输入留言内容"
 
