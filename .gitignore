@@ -1,0 +1,13 @@
+# 忽略所有data内的文件
+data/*
+# 忽略所有config内的文件
+config/*
+# 忽略resources/help/themes内的所有文件夹
+resources/help/themes/**
+# 选择resources/help/themes/default文件夹
+!resources/help/themes/default/
+# 忽略所有的.txt文件
+*.txt
+
+[core]
+  autocrlf = input
