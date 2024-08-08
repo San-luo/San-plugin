@@ -27,6 +27,6 @@ export class medals extends plugin {
     };
 
     async screenshot (e){
-      tool.screenshot(e,'https://gitee.com/San-luo/San-tool')
+      tool.screenshot(e,'https://gitee.com/San-luo/San-plugin')
     }
   }

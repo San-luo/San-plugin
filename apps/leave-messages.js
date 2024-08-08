@@ -27,7 +27,6 @@ const master = tool.masterQQ()//获取主人QQ
 
         /** 设置上下文，后续接收到内容会执行hei方法 */
         this.setContext('hei');
-        logger.info(e)
         let xinxi = [
             "发送对象："+Bot.fl.get(tool.masterQQ()).nickname+master,
             segment.image(Bot.pickUser(master).getAvatarUrl()),
