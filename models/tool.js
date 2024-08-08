@@ -29,7 +29,7 @@ export function masterQQ(){
 export async function screenshot(e,gopath,outpath="./plugins/San-plugin/resources/img/screenshot.png"){
 
         // 启动浏览器
-        const browser = await puppeteer.launch();
+        const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
         // 新建一个页面
         const page = await browser.newPage();
         // 设置页面大小
