@@ -23,7 +23,7 @@ import * as tool from '../models/tool.js';
    
     //函数
     async liuyan(e) {
-        const master = tool.masterQQ()
+        const master = tool.masterQQ()//获取主人QQ
         /** 设置上下文，后续接收到内容会执行hei方法 */
         this.setContext('hei');
         let xinxi = [
@@ -33,9 +33,7 @@ import * as tool from '../models/tool.js';
 
         ]
         //发送消息
-        //Bot.pickUser(3126986875).sendMsg(xinxi)
          e.reply(xinxi);
-         //this.finish('hei')
         
     }
 
