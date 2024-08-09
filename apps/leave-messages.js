@@ -2,6 +2,7 @@
 //导出  类  类名:要与文件名一致 继承  插件类  
 import * as tool from '../models/tool.js';
 const master = tool.masterQQ()//获取主人QQ
+const cfg_priority = await tool.set_priority("leave-messages")
  export class San_Leave_Message extends plugin {
     constructor() {
         super({
@@ -9,7 +10,7 @@ const master = tool.masterQQ()//获取主人QQ
             name: '留言',//插件名字，可以随便写
             dsc: '给主人留言',//插件介绍，可以随便写
             event: 'message',//这个直接复制即可，别乱改
-            priority: tool.set_priority("weather"),//执行优先级：数值越低越6
+            priority: cfg_priority,//执行优先级：数值越低越6
             rule: [
                 {
                     //正则表达式
