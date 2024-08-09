@@ -14,7 +14,7 @@ export class medals extends plugin {
           // 执行方法
             },
             { 
-          reg: '^#截图$',
+          reg: '^#截图.*$',
           fnc: 'screenshot'
                 // 执行方法
             }   
@@ -27,6 +27,8 @@ export class medals extends plugin {
     };
 
     async screenshot (e){
-      tool.screenshot(e,'https://gitee.com/San-luo/San-plugin')
+      e.reply(e.msg.substring(3))
+      let url = e.msg.substring(3)
+      tool.screenshot(e,url)
     }
   }

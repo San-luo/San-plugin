@@ -23,11 +23,21 @@ export function masterQQ(){
 /**
  * 截图并发送
  * @param e 传入事件对象e
- * @param gopath 截图的html文件或网址URL
+ * @param gopath 截图的html文件或网址URL(可不含协议头)
  * @param outpath 图片生成路径,可选
  */
 export async function screenshot(e,gopath,outpath="./plugins/San-plugin/resources/img/screenshot.png"){
 
+        let url;
+        // 检查是否是一个文件路径
+        if (fs.existsSync(gopath) && fs.lstatSync(gopath).isFile()) {
+            // 如果是文件路径，则直接使用该路径
+            url = `file://${path.resolve(gopath)}`;
+        } else {
+            // 如果是一个url，则直接使用该url,自动补全协议头
+            url = gopath.startsWith('http://') || gopath.startsWith('https://') ? gopath : `http://${gopath}`;
+        }
+        e.reply(url)
         // 启动浏览器
         const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
         // 新建一个页面
@@ -35,7 +45,7 @@ export async function screenshot(e,gopath,outpath="./plugins/San-plugin/resource
         // 设置页面大小
         await page.setViewport({ width: 1920, height: 1080 });
         // 打开HTML文件
-        await page.goto(`${gopath}`, { waitUntil: 'networkidle0' });
+        await page.goto(`${url}`, { waitUntil: 'networkidle0' });
         // 将页面渲染为图片并保存到本地
         await page.screenshot({ path: `${outpath}`, fullPage: true });
         // 关闭浏览器
@@ -51,8 +61,5 @@ export async function screenshot(e,gopath,outpath="./plugins/San-plugin/resource
             }
         });
 }
-
-
-
 
 
