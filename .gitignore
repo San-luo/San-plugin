@@ -1,6 +1,6 @@
 #忽略内容
 /node_modules/*
-/resources/face/*
+/images/*
 #换行符处理
 * text=auto eol=lf
 

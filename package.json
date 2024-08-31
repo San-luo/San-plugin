@@ -11,7 +11,10 @@
     "#miao": "./../../plugins/miao-plugin/components/index.js"
   },
   "dependencies": {
-    "js-yaml": "^4.1.0"
+    "js-yaml": "*",
+    "path": "*",
+    "lodash": "*",
+    "axios": "*"
   },
   "devDependencies": {},
   "keywords": [],
