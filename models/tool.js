@@ -23,6 +23,26 @@ export function masterQQ(){
     return masterqq
 }
 
+
+/**
+ * 这是一个判断输入的QQ是否在配置文件中的masterQQ列表中的函数。如果输入的QQ在masterQQ列表中，返回true；否则，返回false。
+ *
+ * @param {Number} qq - 需要判断的QQ号码。
+ * @return {Boolean} 如果输入的QQ在masterQQ列表中，返回true；否则，返回false。
+ */
+export function ismaster(qq){
+  const fileContents = fs.readFileSync('./config/config/other.yaml', 'utf8');
+    // 将YAML内容解析为JavaScript对象
+    const data = yaml.load(fileContents);
+    // 获取键的值
+    const keyValue = data.masterQQ; 
+    if(keyValue.inclouds(qq)){
+      return true
+    }else{
+      return false
+    }
+}
+
 /**
  * 截图并发送
  * @param e 传入事件对象e

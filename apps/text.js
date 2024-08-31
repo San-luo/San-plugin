@@ -15,7 +15,7 @@ export class San_Text extends plugin {
             },
             { 
           reg: '^#截图.*$',
-          fnc: 'screenshot'
+          fnc: 'screenshot' 
                 // 执行方法
             }   
     ]

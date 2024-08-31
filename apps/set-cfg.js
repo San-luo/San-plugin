@@ -20,7 +20,7 @@ export class San_SetCfg extends plugin {
   
     }
     async SetCfg (e) {
-        if (!this.e.isMaster){
+        if (!tool.ismaster(e.user_id)){
             e.reply("你不是我的主人哦")
             return false
         } 
