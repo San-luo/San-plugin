@@ -1,5 +1,5 @@
 {
-  "name": "san-plugin",
+  "name": "San-plugin",
   "version": "1.0.0",
   "description": "~~~~",
   "type": "module",
@@ -12,9 +12,11 @@
   },
   "dependencies": {
     "js-yaml": "*",
+    "fs": "*",
     "path": "*",
     "lodash": "*",
-    "axios": "*"
+    "axios": "*",
+    "glob": "*",
   },
   "devDependencies": {},
   "keywords": [],
