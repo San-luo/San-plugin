@@ -2,8 +2,6 @@ import * as tool from '../models/tool.js';
 import fs from 'fs'
 import yaml from 'js-yaml';
 import path from 'path'
-import { globSync } from 'glob';
-import { segment } from 'oicq';
 let tag
 
 //let code//-1:该用户正在添加消息 一个已知小bug，先鸽...
