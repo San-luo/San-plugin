@@ -1,6 +1,9 @@
 import yaml from 'js-yaml';
 import fs from 'fs';
+import path from 'path';
+import fsPromises from 'fs/promises';
 import puppeteer from 'puppeteer';
+import axios from 'axios';
 
 /**
  * 获取主人qq号
@@ -26,7 +29,7 @@ export function masterQQ(){
  * @param gopath 截图的html文件或网址URL(可不含协议头)
  * @param outpath 图片生成路径,可选
  */
-export async function screenshot(e, gopath, clipRegion, outpath = "./plugins/San-plugin/resources/img/screenshot.jepg") {
+export async function screenshot(e, gopath, clipRegion, outpath = "./plugins/San-plugin/resources/img/screenshot.jpeg") {
 
     let url;
 
@@ -41,6 +44,7 @@ export async function screenshot(e, gopath, clipRegion, outpath = "./plugins/San
 
     // 启动浏览器
     const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+    //const browser = await puppeteer.launch({ headless: true, args: ['--disable-setuid-sandbox'] });
     // 新建一个页面
     const page = await browser.newPage();
     // 设置页面大小
@@ -76,6 +80,7 @@ export async function screenshot(e, gopath, clipRegion, outpath = "./plugins/San
         logger.error(err);
     }
 }
+
 
 /**
  *  生成裁剪区域参数,用于传递给screenshot()
@@ -157,5 +162,121 @@ export async function readyaml(filePath) {
 
 
 
+/**
+ * 这是一个时间转换函数，可以将时间戳转换为格式化的时间，也可以将格式化的时间转换为时间戳。
+ *
+ * @param {Number} input - 需要转换的时间，可以是时间戳，也可以是格式化的时间字符串。
+ * @param {Number} direction - 转换的方向，0表示将时间戳转换为格式化的时间，1表示将格式化的时间转换为时间戳。
+ * @return {String/Number} 返回转换后的结果。如果direction为0，返回的是格式化的时间字符串；如果direction为1，返回的是时间戳。如果输入的参数不符合要求，会记录错误日志并返回undefined。
+ */
+export function convertTime(input, direction) {
+  if (direction == 0) {
+      // 将时间戳转换为格式化的时间
+      const date = new Date(input);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  } else if (direction == 1) {
+      // 将格式化的时间转换为时间戳
+      const parts = input.split(' ');
+      const dateParts = parts[0].split('-');
+      const timeParts = parts[1].split(':');
+
+      const date = new Date(
+          parseInt(dateParts[0], 10),
+          parseInt(dateParts[1], 10) - 1, // 月份是从0开始的
+          parseInt(dateParts[2], 10),
+          parseInt(timeParts[0], 10),
+          parseInt(timeParts[1], 10),
+          parseInt(timeParts[2], 10)
+      );
+
+      return date.getTime();
+  } else {
+      logger.error('San-plugin: 错误的时间转换,请检查时间格式是否出错 ');
+  }
+}
+
+export function JsonWrite(obj, filePath) {
+  try {
+    const dirPath = path.dirname(filePath); // 获取文件所在目录
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true }); // 递归创建目录
+    }
+    fs.writeFileSync(filePath, JSON.stringify(obj, null, 2)); // 写入文件
+  } catch (err) {
+    if (err.code !== 'EEXIST') { // 如果不是目录已存在的错误，则记录错误
+      logger.error(err);
+    }
+  }
+}
 
 
+
+export async function readFromJsonFile(filePath) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(filePath, 'utf8', (err, data) => {
+      if (err) {
+        logger.error('json文件读取:', err);
+        reject(err);
+        return;
+      }
+      try {
+        const obj = JSON.parse(data);
+        resolve(obj);
+      } catch (parseErr) {
+        logger.error('json转换错误:', parseErr);
+        reject(parseErr);
+      }
+    });
+  });
+}
+
+
+export async function downloadImage(url, targetPath) {
+  axios({
+    url,
+    method: 'get',
+    responseType: 'stream'
+  }).then(response => {
+    // 创建一个可写的流，它允许写入文件系统
+    const writer = fs.createWriteStream(targetPath);
+    // 管道流
+    response.data.pipe(writer);
+    // 监听管道完成事件
+    writer.on('finish', () => {
+      console.log(`文件已保存至 ${targetPath}`);
+    });
+    // 监听错误事件
+    writer.on('error', error => {
+      console.error(`下载文件失败: ${error.message}`);
+    });
+    // 如果响应结束前写入发生错误，则取消响应
+    writer.on('close', () => {
+      response.data.destroy();
+    });
+  }).catch(error => {
+    console.error(`下载文件失败: ${error.message}`);
+  });
+}
+
+export async function countFilesInDirectorySync(directoryPath) {
+  try { 
+    // 同步读取目录内容
+    const files = fs.readdirSync(directoryPath);
+    // 返回文件数量
+    return files.length;
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      console.error(`目录不存在： ${directoryPath}`);
+    } else {
+      console.error(`读取目录失败： ${error.message}`);
+    }
+    return -1; //抛出异常
+  }
+}

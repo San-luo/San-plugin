@@ -25,7 +25,7 @@ const cfg_priority = await tool.set_priority("leave-messages")
    
     //函数
     async liuyan(e) {
-
+ 
         /** 设置上下文，后续接收到内容会执行hei方法 */
         this.setContext('hei');
         let xinxi = [
