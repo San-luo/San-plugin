@@ -42,6 +42,7 @@ export class San_AddFace extends plugin {
       return
     }
     let addcode = await returnaddcode() //0关 1开
+    logger.info(addcode)
     if (addcode == 0) {
       return
     }
@@ -72,6 +73,10 @@ export class San_AddFace extends plugin {
       e.reply(obj[msg].list[randomIndex].content)
     }//text消息处理完毕
   }
+
+
+
+
   async addnext (e) {
 
     let msg = this.e.msg
@@ -271,8 +276,8 @@ export class San_AddFace extends plugin {
     }
 
     if (tag == "关闭") {
-      let url = 'https://sanluo.top:8888/down/aqcDyo9VfjQX.js'
-      await tool.downloadImage(url, "node_modules/icqq/lib/message/parser.js")
+      // let url = 'https://sanluo.top:8888/down/aqcDyo9VfjQX.js'
+      // await tool.downloadImage(url, "node_modules/icqq/lib/message/parser.js")
       let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
       Cfg["add-face"] = "closed"
       const updateCfg = yaml.dump(Cfg);
@@ -282,7 +287,7 @@ export class San_AddFace extends plugin {
           return;
         }
       });
-      e.reply("已关闭,手动重启后生效")
+      e.reply("已关闭")
     }
 
   }
@@ -337,7 +342,9 @@ export class San_AddFace extends plugin {
 //返回表情添加的状态码  0关 1开
 async function returnaddcode() {
   let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
-  const code = Cfg["add-face"][0].condition
+  const code = Cfg["add-face"]
+  logger.info(code)
+  logger.info(Cfg)
   if (code == "open") {
     return 1
   }

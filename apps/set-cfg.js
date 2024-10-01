@@ -1,4 +1,5 @@
 import common from '../../../lib/common/common.js';
+import config from '../../../lib/config/config.js'
 import * as tool from '../models/tool.js';
 import yaml from 'js-yaml';
 import fs from 'fs'
@@ -20,7 +21,7 @@ export class San_SetCfg extends plugin {
   
     }
     async SetCfg (e) {
-        if (!tool.ismaster(e.user_id)){
+        if (e.user_id != config.masterQQ[0]){
             e.reply("你不是我的主人哦")
             return false
         } 
