@@ -30,7 +30,7 @@ export class San_AddFace extends plugin {
           // 执行方法
         },
         {
-          reg: '(.*)',
+          reg: '(\d*)?(.*)',
           fnc: 'getText',
         },
       ]

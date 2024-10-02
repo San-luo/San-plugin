@@ -12,7 +12,7 @@ export class San_SetCfg extends plugin {
         priority: '50',//优先级
         rule: [
             { 
-            reg: '^#(散|san|San)设置.*$',
+            reg: '^#?(散|san|San)设置.*$',
             fnc: 'SetCfg'
                 // 执行方法
             }   
