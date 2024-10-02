@@ -29,8 +29,8 @@ export class San_AddFace extends plugin {
           fnc: 'addswitch'
           // 执行方法
         },
-        {
-          reg: '(\d*)?(.*)',
+        {//^(?=.*[^\d])[^\d]*\d*[^\d]*$
+          reg: '^(?=.*[^\d])[^\d]*\d*[^\d]*$',
           fnc: 'getText',
         },
       ]
@@ -353,3 +353,58 @@ async function returnaddcode() {
   }
 }
 
+export class San_ReplyFace extends plugin {
+  constructor () {
+    super({
+      name: 'San-plugin表情功能_',
+      dsc: 'San-plugin表情功能_',
+      event: 'message', //发出提示信息
+      priority: '-100', //优先级
+      rule: [
+        {
+          reg: '^\d+$',
+          fnc: 'getText',
+        },
+      ]
+    })
+  }
+  async getText (e){
+    if (!fs.existsSync(faceFile)) {
+      return
+    }
+    let addcode = await returnaddcode() //0关 1开
+    logger.info(addcode)
+    if (addcode == 0) {
+      return
+    }
+    let msg = e.msg
+    let msgtype = e.message[0].type
+    const obj = await tool.readFromJsonFile(faceFile)
+    let keys = Object.keys(obj)
+    //logger.info(keys)
+    if (keys.includes(msg)) {
+      logger.info(`San-plugin 匹配到 ${msg}`)
+      //logger.info(msgtype)
+    } else {
+      //logger.info(`San-plugin 未匹配到 ${msg}`)
+      //logger.info(e)
+      return
+    }
+    const randomIndex = Math.floor(Math.random() * obj[msg].list.length);
+    const matchType = obj[msg].list[randomIndex].type
+  
+    //以下为iamge消息的处理
+    if (matchType == "image") {
+      e.reply([segment.image(obj[msg].list[randomIndex].imageFile)])
+    }//image消息处理完毕
+  
+    //以下下为text消息的处理
+    if (matchType == "text") {
+      let type; // 声明变量
+      e.reply(obj[msg].list[randomIndex].content)
+    }//text消息处理完毕
+  }
+
+
+
+}
