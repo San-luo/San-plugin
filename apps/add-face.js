@@ -39,7 +39,7 @@ export class San_AddFace extends plugin {
       return
     }
     let addcode = await returnaddcode() //0关 1开
-    logger.info(addcode)
+    //logger.info(addcode)
     if (addcode == 0) {
       return
     }
@@ -49,7 +49,7 @@ export class San_AddFace extends plugin {
     let keys = Object.keys(obj)
     //logger.info(keys)
     if (keys.includes(msg)) {
-      logger.info(`San-plugin 匹配到 ${msg}`)
+      logger.info(`San-plugin表情回复 匹配到 ${msg}`)
       //logger.info(msgtype)
     } else {
       //logger.info(`San-plugin 未匹配到 ${msg}`)
@@ -293,7 +293,7 @@ export class San_AddFace extends plugin {
   }
 
   async addswitch (e) {
-    if(e.user_id != config.masterQQ[0]){
+    if(!tool.ismaster(e.user_id)){
       e.reply('你不是我的主人哦')
       return false
     }
@@ -386,8 +386,8 @@ export class San_AddFace extends plugin {
 async function returnaddcode() {
   let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
   const code = Cfg["add-face"]
-  logger.info(code)
-  logger.info(Cfg)
+  //logger.info(code)
+  //logger.info(Cfg)
   if (code == "open") {
     return 1
   }
@@ -417,7 +417,7 @@ export class San_ReplyFace extends plugin {
       return
     }
     let addcode = await returnaddcode() //0关 1开
-    logger.info(addcode)
+    //logger.info(addcode)
     if (addcode == 0) {
       return
     }
@@ -427,7 +427,7 @@ export class San_ReplyFace extends plugin {
     let keys = Object.keys(obj)
     //logger.info(keys)
     if (keys.includes(msg)) {
-      logger.info(`San-plugin 匹配到 ${msg}`)
+      logger.info(`San-plugin表情回复 匹配到 ${msg}`)
       //logger.info(msgtype)
     } else {
       //logger.info(`San-plugin 未匹配到 ${msg}`)
