@@ -30,7 +30,7 @@ export class San_AddFace extends plugin {
                     fnc: 'facelist'
                 },
                 {
-                    reg: '^#?(散|san|San)?删除表情(全部项)?(.*?)(第(\d*)项)?$',
+                    reg: '^#?(散|san|San)?删除(表情全部项)?(.*?)(第(\d*)项)?$',
                     fnc: 'deleteface'
                 },
             ]
@@ -307,7 +307,7 @@ export class San_AddFace extends plugin {
 
 
     async deleteface(e){
-        let reg = /^#?(散|san|San)?删除(全部项)?(.*?)(第(\d*)项)?$/
+        let reg = /^#?(散|san|San)?删除(表情全部项)?(.*?)(第(\d*)项)?$/
         const str = e.msg
         const match = str.match(reg)
         let isall = match[2] ? true : false
