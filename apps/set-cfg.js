@@ -9,7 +9,7 @@ export class San_SetCfg extends plugin {
         name: 'San_SetCfg',
         dsc: '修改San-plugin配置信息',
         event: 'message',//发出提示信息
-        priority: '50000',//优先级
+        priority: '200',//优先级
         rule: [
             { 
             reg: '^#?(散|san|San)设置.*$',
@@ -25,7 +25,7 @@ export class San_SetCfg extends plugin {
             e.reply("你不是我的主人哦")
             return false
         } 
-        let reg = /^#(散|san|San)设置([\u4e00-\u9fa5]*)?(\d*)?$/
+        let reg = /^#?(散|san|San)设置([\u4e00-\u9fa5]*)?(\d*)?$/
         let str = e.msg
         const match = str.match(reg)
 

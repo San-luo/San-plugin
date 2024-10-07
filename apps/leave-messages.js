@@ -15,7 +15,7 @@ const cfg_priority = await tool.set_priority("leave-messages")
             rule: [
                 {
                     //正则表达式
-                    reg: '^#留言$',
+                    reg: '^#?留言$',
                     //函数
                     fnc: 'liuyan'
                 }
@@ -44,7 +44,7 @@ const cfg_priority = await tool.set_priority("leave-messages")
     async hei(e) {
         //获取消息
         let xiaoxi = this.e;//消息内容
-        Bot.pickUser(master).sendMsg([
+        await Bot.pickUser(master).sendMsg([
             "主人有人给你留言啦",
             
             "\n"+Bot.pickFriend(e.user_id).nickname+e.user_id,
@@ -53,7 +53,6 @@ const cfg_priority = await tool.set_priority("leave-messages")
         ])
 
         async function replyxiaoxi(){
-            logger.info(xiaoxi.message[0].type)
         if (xiaoxi.message[0].type == "image"){
              let neirong = segment.image(xiaoxi.message[0].url)
              Bot.pickUser(master).sendMsg(neirong)

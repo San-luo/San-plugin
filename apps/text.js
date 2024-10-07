@@ -1,5 +1,7 @@
 import * as tool from '../models/tool.js';
 import fs from 'fs'
+import common from '../../../lib/common/common.js';
+import { segment } from 'icqq';
 export class San_Text extends plugin {
     constructor () {
       super({
@@ -11,30 +13,21 @@ export class San_Text extends plugin {
             { 
           reg: '^#text$',
           fnc: 'text'
-          // 执行方法
-            },
-            { 
-          reg: '^#截图.*$',
-          fnc: 'screenshot' 
-                // 执行方法
-            }   
-    ]
+            } 
+        ]
       })
-  
     }
+    
     async text (e) {   
-      let obj = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
-      logger.warn(obj)
-      const weatherPriority = obj.priority.find(item => item.weather !== undefined)?.weather;
-      logger.warn(obj.priority[0])
-      logger.warn(weatherPriority)
-
+      let msg = []
+      for(let a=0 ; a<10; a++){
+        msg.push([`你好${a}`,segment.image(`https://ts1.cn.mm.bing.net/th?id=ORMS.e61ef67db5876fb75119b7d6e2bb01e4&pid=Wdp&w=612&h=328&qlt=90&c=1&rs=1&dpr=1&p=0`)])
+      }
+      let msgfod=await common.makeForwardMsg(e,msg,"111")
+      e.reply(msgfod)
 
 
 
     };
 
-    async screenshot (e){
-
-    }
   }

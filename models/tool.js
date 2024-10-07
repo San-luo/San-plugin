@@ -226,6 +226,12 @@ export function convertTime(input, direction) {
   }
 }
 
+/**
+ * 这是一个将对象写入JSON文件的函数。对象转换为JSON格式并写入指定的文件。
+ *
+ * @param {Object} obj - 需要被写入文件的对象。
+ * @param {String} filePath - 目标文件的完整路径。
+ */
 export function JsonWrite(obj, filePath) {
   try {
     const dirPath = path.dirname(filePath); // 获取文件所在目录
@@ -242,6 +248,12 @@ export function JsonWrite(obj, filePath) {
 
 
 
+/**
+ * 这是一个异步读取JSON文件并解析为对象的函数。如果读取或解析过程中出现错误，会抛出异常并在日志中记录错误信息。
+ *
+ * @param {String} filePath - 需要读取的JSON文件的路径。
+ * @return {Promise<Object>} 返回一个Promise对象，该对象在成功时解析为从JSON文件中读取并解析的对象，失败时则抛出错误。
+ */
 export async function readFromJsonFile(filePath) {
   return new Promise((resolve, reject) => {
     fs.readFile(filePath, 'utf8', (err, data) => {
@@ -262,6 +274,13 @@ export async function readFromJsonFile(filePath) {
 }
 
 
+/**
+ * 这是一个异步下载图片的函数。它使用axios库发送GET请求获取图片流，然后通过Node.js的文件系统(fs)模块将该流写入指定的目标路径。
+ *
+ * @param {String} url - 需要下载的图片的URL地址。
+ * @param {String} targetPath - 图片保存的目标路径。
+ * @return {Promise} 返回一个Promise对象，当图片成功下载并保存到指定路径时，Promise将被resolve；如果在下载或保存过程中发生错误，Promise将被reject。
+ */
 export async function downloadImage(url, targetPath) {
   axios({
     url,
@@ -289,6 +308,12 @@ export async function downloadImage(url, targetPath) {
   });
 }
 
+/**
+ * 这是一个同步读取并计算指定目录下文件数量的函数。如果目录存在，返回该目录下的文件数量；如果目录不存在或读取失败，则返回-1并打印错误信息。
+ *
+ * @param {String} directoryPath - 需要读取的目录路径。
+ * @return {Number} 返回目录下的文件数量。如果目录不存在或读取失败，返回-1。
+ */
 export async function countFilesInDirectorySync(directoryPath) {
   try { 
     // 同步读取目录内容
