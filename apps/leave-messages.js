@@ -2,7 +2,7 @@
 //导出  类  类名:要与文件名一致 继承  插件类  
 import { segment } from 'oicq';
 import * as tool from '../models/tool.js';
-const master = tool.masterQQ()//获取主人QQ
+const master = tool.masterQQ()//获取主人QQ,可更改为指定qq号
 const cfg_priority = await tool.set_priority("leave-messages")
  export class San_Leave_Message extends plugin {
     constructor() {
@@ -30,7 +30,7 @@ const cfg_priority = await tool.set_priority("leave-messages")
         /** 设置上下文，后续接收到内容会执行hei方法 */
         this.setContext('hei');
         let xinxi = [
-            "发送对象："+Bot.fl.get(tool.masterQQ()).nickname+master,
+            "发送对象："+Bot.fl.get(master).nickname+master,
             segment.image(Bot.pickUser(master).getAvatarUrl()),
             "请输入留言内容"
 
