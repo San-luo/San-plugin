@@ -343,7 +343,7 @@ export class San_AddFace extends plugin {
             logger.info(facelist)
             await tool.JsonWrite(facelist,faceFile)
 
-            e.reply(`已删除${facetag}包含的全部项`)
+            e.reply(`已删除- ${facetag} -包含的全部项`)
         }
         
 
