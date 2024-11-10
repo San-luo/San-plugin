@@ -41,7 +41,12 @@ export class San_AddFace extends plugin {
     async addnext(e) {
 
         let msg = this.e.msg
+        if (this.e.message[0].type == 'long_msg'){
+        this.e.message.shift()
+      
+        }
         let msgtype = this.e.message[0].type
+
 
         //以下为text类型消息的处理
         if (msgtype == 'text') {
@@ -257,7 +262,7 @@ export class San_AddFace extends plugin {
         //logger.info(match)
         const tag = match[2]
         if (tag == "开启") {
-            let url = 'https://sanluo.top:8888/down/mhFU8AemzgWZ.js'
+            let url = 'https://sanluo.icu:11111/down/RdDzehzqewKw.js'
             await tool.downloadImage(url, "node_modules/icqq/lib/message/parser.js")
             let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
             Cfg["add-face"] = "open"
@@ -339,7 +344,7 @@ export class San_AddFace extends plugin {
             logger.info(facelist)
             await tool.JsonWrite(facelist,faceFile)
 
-            e.reply(`已删除${facetag}包含的全部项`)
+            e.reply(`已删除- ${facetag} -包含的全部项`)
         }
         
 
