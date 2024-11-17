@@ -260,19 +260,18 @@ export class San_AddFace extends plugin {
 
             if(isall){
                 if(!tool.ismaster(e.user_id)){
-                    if (facetag == ''){
-                        e.reply("需要删除的表情tag为空!")
-                        return//空tag
-                    }
-
-                    if (!(keys.includes(facetag))){
-                        e.reply(`表情- ${facetag} - 不存在!`)
-                        return//不存在此表情tag
-                    }
 
                     e.reply("非主人无法删除表情包含的全部项")
                     return//非主人尝试删除全部项
                 }
+                    if (facetag == ''){
+                        e.reply("需要删除的表情tag为空!")
+                        return//空tag
+                    }
+                  if (!(keys.includes(facetag))){
+                        e.reply(`表情- ${facetag} - 不存在!`)
+                        return//不存在此表情tag
+                    }
             }
         
 
