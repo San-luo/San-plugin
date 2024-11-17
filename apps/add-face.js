@@ -406,7 +406,6 @@ export async function facereply(e){
             return
         }
         let msg = e.msg
-        let msgtype = e.message[0].type
         const obj = await tool.readFromJsonFile(faceFile)
         let keys = Object.keys(obj)
         //logger.info(keys)
@@ -435,14 +434,12 @@ export async function facereply(e){
 
         //以下下为text消息的处理
         if (matchType == "text") {
-            let type; // 声明变量
-            e.reply(obj[msg].list[randomIndex].content)
+            sendmsg = await e.reply(obj[msg].list[randomIndex].content)
         }//text消息处理完毕
 
         //以下下为face消息的处理
         if (matchType == "face") {
-            let type; // 声明变量
-            e.reply(segment.face(obj[msg].list[randomIndex].id))
+            sendmsg = await e.reply(segment.face(obj[msg].list[randomIndex].id))
         }//face消息处理完毕
 
         if ("rand" in face){
