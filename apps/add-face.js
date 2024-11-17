@@ -265,7 +265,7 @@ export class San_AddFace extends plugin {
                         return//空tag
                     }
 
-                    if (!keys.includes(facetag)){
+                    if (!(keys.includes(facetag))){
                         e.reply(`表情- ${facetag} - 不存在!`)
                         return//不存在此表情tag
                     }
@@ -432,8 +432,20 @@ export async function facereply(e){
         //以下为other消息的处理
         if (matchType == "other") {
             sendmsg = await e.reply(face.msg)
-        }//image消息处理完毕  
-        
+        }//other消息处理完毕  
+
+        //以下下为text消息的处理
+        if (matchType == "text") {
+            let type; // 声明变量
+            e.reply(obj[msg].list[randomIndex].content)
+        }//text消息处理完毕
+
+        //以下下为face消息的处理
+        if (matchType == "face") {
+            let type; // 声明变量
+            e.reply(segment.face(obj[msg].list[randomIndex].id))
+        }//face消息处理完毕
+
         if ("rand" in face){
             if(face["rand"].length >= 5){
                 face["rand"].shift()
