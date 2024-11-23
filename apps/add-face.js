@@ -41,7 +41,7 @@ export class San_AddFace extends plugin {
         const tag = user_tags[this.e.user_id]
         let msg = this.e.msg
         let msgtype = this.e.message[0].type
-        const stoplist = ['结束添加', '终止添加', '停止添加', '放弃添加', '终止','停止','#结束添加', '#终止添加', '#停止添加', '#放弃添加', '#终止','#停止'];
+        const stoplist = ['结束添加', '终止添加', '停止添加', '放弃添加', '终止','停止','放弃','#结束添加', '#终止添加', '#停止添加', '#放弃添加', '#终止','#停止','#放弃'];
         if (stoplist.includes(msg)) {
             e.reply('已放弃本次添加');
             delete user_tags[e.user_id]; // 清除用户的tag
