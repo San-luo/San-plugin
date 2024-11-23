@@ -3,9 +3,8 @@ import fs from 'fs';
 import yaml from 'js-yaml';
 import path from 'path';
 import common from '../../../lib/common/common.js';
-let tag//用于添加表情
+let Trans_tag//用作中转变量
 
-//let code//-1:该用户正在添加消息 一个已知小bug，先鸽...
 let faceFile = "./plugins/San-plugin/resources/face/userface.json"
 export class San_AddFace extends plugin {
     constructor() {
@@ -39,9 +38,14 @@ export class San_AddFace extends plugin {
     }
 
     async addnext(e) {
-
+        const tag = Trans_tag
         let msg = this.e.msg
         let msgtype = this.e.message[0].type
+        const stoplist = ['结束添加', '终止添加', '停止添加', '放弃添加', '终止'];
+        if (stoplist.includes(msg)) {
+            e.reply('已放弃本次添加');
+            return;
+        }
 
 
         //以下为image类型的消息处理
@@ -180,7 +184,7 @@ export class San_AddFace extends plugin {
             e.reply("tag禁止为空!")
             return
         } else {
-            tag = match[1] //获取到添加tag
+            Trans_tag = match[1] //获取到添加tag
             e.reply("请发送添加内容")
         }
 
@@ -196,8 +200,8 @@ export class San_AddFace extends plugin {
         let str = e.msg
         const match = str.match(reg)
         //logger.info(match)
-        const tag = match[2]
-        if (tag == "开启") {
+        const state = match[2]
+        if (state == "开启") {
             let url = 'https://sanluo.icu:11111/down/RdDzehzqewKw.js'
             await tool.downloadImage(url, "node_modules/icqq/lib/message/parser.js")
             let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
@@ -212,7 +216,7 @@ export class San_AddFace extends plugin {
             e.reply("已开启,手动重启后生效")
         }
 
-        if (tag == "关闭") {
+        if (state == "关闭") {
             // let url = 'https://sanluo.top:8888/down/aqcDyo9VfjQX.js'
             // await tool.downloadImage(url, "node_modules/icqq/lib/message/parser.js")
             let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
