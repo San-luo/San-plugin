@@ -21,7 +21,7 @@ logger.info('-------------------------')
         let msg = `San插件依赖缺失,请运行: pnpm install --filter=san-plugin`;
         common.relpyPrivate(cfg.masterQQ[0], msg);
         logger.warn(`----------------------------`);
-        return;
+        
       }
     }
   }
