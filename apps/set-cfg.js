@@ -9,10 +9,10 @@ export class San_SetCfg extends plugin {
         name: 'San_SetCfg',
         dsc: '修改San-plugin配置信息',
         event: 'message',//发出提示信息
-        priority: '200',//优先级
+        priority: '10',//优先级
         rule: [
             { 
-            reg: '^#?(散|san|San)设置.*$',
+            reg: '^#(散|san|San)设置.*$',
             fnc: 'SetCfg'
                 // 执行方法
             }   
