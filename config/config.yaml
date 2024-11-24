@@ -1,5 +1,0 @@
-imgQuality: 100
-add-face: open
-priority:
-  - weather: 10
-  - LeaveMessages: 100000

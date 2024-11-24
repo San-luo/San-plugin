@@ -234,8 +234,13 @@ export class San_AddFace extends plugin {
             user_tags[e.user_id]["tag"] = match[2] //获取到添加tag
 
             user_tags[e.user_id]["iscontinous"] = iscontinous //获取到添加类型
-
+            
+            if(!iscontinous){
             e.reply("请发送添加内容")
+          }else{
+          e.reply('请发送添加内容,结束请发#结束添加')
+        }
+           
         }
 
     }
