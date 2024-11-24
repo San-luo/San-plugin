@@ -21,8 +21,8 @@ export class San_SetCfg extends plugin {
   
     }
     async SetCfg (e) {
-        if (e.user_id != config.masterQQ[0]){
-            e.reply("你不是我的主人哦")
+        if (!tool.ismaster(e.user_id)) {
+            e.reply('你不是我的主人哦')
             return false
         } 
         let reg = /^#?(散|san|San)设置([\u4e00-\u9fa5]*)?(\d*)?$/
