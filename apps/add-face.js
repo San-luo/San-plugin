@@ -20,13 +20,12 @@ export class San_AddFace extends plugin {
                     // 执行方法
                 },
                 {
-                    reg: '^#?(散|san|San)设置表情添加(开启|关闭)$',
-                    fnc: 'addswitch'
-                    // 执行方法
-                },
-                {
                     reg: '#表情列表$',
                     fnc: 'facelist'
+                },
+                {
+                    reg: '^#?(散|san|San)设置表情添加(开启|关闭)$',
+                    fnc: 'addswitch'
                 },
                 {
                     reg: '^#?(散|san|San)?表情删除(全部项(.*?))?$',
@@ -174,11 +173,15 @@ export class San_AddFace extends plugin {
     }
 
     async add(e) {
-        let addcode = await returnaddcode() //0开 1关
-
-        if (addcode == 0) {
+        if (!(await isAddOpen())) {
             e.reply("表情添加已关闭,请发送#san设置表情添加开启")
             return
+        }
+        if ((await isAddOnlyOpen())){
+            if (!tool.ismaster(e.user_id)) {
+                e.reply('你不是我的主人哦')
+                return false
+            }
         }
         // 检查文件夹是否存在，如果不存在则创建
         if (!fs.existsSync("./plugins/San-plugin/resources/face/images")) {
@@ -233,7 +236,7 @@ export class San_AddFace extends plugin {
             let url = 'https://sanluo.icu:11111/down/RdDzehzqewKw.js'
             await tool.downloadImage(url, "node_modules/icqq/lib/message/parser.js")
             let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
-            Cfg["add-face"] = "open"
+            Cfg.add_face = true
             const updateCfg = yaml.dump(Cfg);
             fs.writeFile('./plugins/San-plugin/config/config.yaml', updateCfg, 'utf8', (err) => {
                 if (err) {
@@ -248,7 +251,7 @@ export class San_AddFace extends plugin {
             // let url = 'https://sanluo.top:8888/down/aqcDyo9VfjQX.js'
             // await tool.downloadImage(url, "node_modules/icqq/lib/message/parser.js")
             let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
-            Cfg["add-face"] = "closed"
+            Cfg.add_face = false
             const updateCfg = yaml.dump(Cfg);
             fs.writeFile('./plugins/San-plugin/config/config.yaml', updateCfg, 'utf8', (err) => {
                 if (err) {
@@ -267,8 +270,9 @@ export class San_AddFace extends plugin {
         let keys = Object.keys(facelist)
         let msg =""
         let t =1
-        let addcode = await returnaddcode() //0关 1开
-        if (addcode = 0){
+        logger.error(`isAddOpen ${isAddOnlyOpen()}`)
+        
+        if (!(await isAddOpen())){
             msg = msg +`注意: 表情功能已关闭 开启-> #san设置表情添加开启 `+ "\n"
         }
         for (let i of keys){
@@ -414,17 +418,26 @@ export class San_AddFace extends plugin {
 
 
 
-//返回表情添加的状态码  0关 1开
-async function returnaddcode() {
+//返回表情添加的状态
+async function isAddOpen() {
     let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
-    const code = Cfg["add-face"]
-    //logger.info(code)
-    //logger.info(Cfg)
-    if (code == "open") {
-        return 1
+    const TorF = Cfg.add_face
+    if (TorF) {
+        return true
+    }else{
+        return false
     }
-    if (code == "closed") {
-        return 0
+}
+
+//返回表情添加仅主人的状态
+async function isAddOnlyOpen() {
+    let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
+    const TorF = Cfg.add_onlyMaster
+
+    if (TorF) {
+        return true
+    }else{
+        return false
     }
 }
 
@@ -436,9 +449,7 @@ export async function facereply(e){
         if (!fs.existsSync(faceFile)) {
             return
         }
-        let addcode = await returnaddcode() //0关 1开
-        //logger.info(addcode)
-        if (addcode == 0) {
+        if (!isAddOpen()) {
             return
         }
         let msg = e.msg

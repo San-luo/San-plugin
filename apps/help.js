@@ -2,6 +2,7 @@ import * as tool from '../models/tool.js';
 import puppeteer from 'puppeteer';
 import path from 'path';
 import fs from 'fs';
+import url from 'url'
 export class San_Help extends plugin {
     constructor () {
       super({
@@ -21,7 +22,8 @@ export class San_Help extends plugin {
 
 
 async help(e) {
-    const html_path = path.resolve('./plugins/San-plugin/resources/html/index.html');
+    const filepath = path.resolve('./plugins/San-plugin/resources/html/index.html');
+    const html_path = url.pathToFileURL(filepath).href;
     
     // 启动浏览器
     const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });

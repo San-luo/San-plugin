@@ -1,4 +1,5 @@
 imgQuality: 100
-add-face: closed
+add_face: false
+add_onlyMaster : false
 
 
