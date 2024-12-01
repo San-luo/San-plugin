@@ -30,38 +30,44 @@ export class San_SetCfg extends plugin {
         const match = str.match(reg)
 
 
-            let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')  
+            let Cfg_config = await tool.readyaml('./plugins/San-plugin/config/config.yaml')  
+            let Cfg_priority = await tool.readyaml('./plugins/San-plugin/config/priority.yaml') 
             let ChangeInfo = parseInt(match[3],10)
             switch (match[2]) {
                 case `图像质量`:
-                    Cfg.imgQuality = ChangeInfo ;
+                    Cfg_config.imgQuality = ChangeInfo ;
                     break;
                 case `优先级天气`:
-                    Cfg.priority[0].weather = ChangeInfo ;
+                    Cfg_priority.weather = ChangeInfo ;
                     break;
                 case `优先级留言`:
-                    Cfg.priority[1].LeaveMessages = ChangeInfo ;
+                    Cfg_priority.LeaveMessages = ChangeInfo ;
                     break;
                 default:
                     //e.reply("指令未匹配") ;
                     break;
             }
-            const updateCfg = yaml.dump(Cfg);
-            fs.writeFile('./plugins/San-plugin/config/config.yaml', updateCfg, 'utf8', (err) => {
+            const update_config = yaml.dump(Cfg_config);
+            const update_priority = yaml.dump(Cfg_priority);
+            fs.writeFile('./plugins/San-plugin/config/config.yaml', update_config, 'utf8', (err) => {
+                if (err) {
+                logger.err('San-Plugin 错误：', err);
+                return;
+                }
+            });
+            fs.writeFile('./plugins/San-plugin/config/config.yaml', update_priority, 'utf8', (err) => {
                 if (err) {
                 logger.err('San-Plugin 错误：', err);
                 return;
                 }
             });
 
-            Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')  
-
             let CgfInfo =[
-                `图像质量：${Cfg.imgQuality}`,
+                `图像质量：${Cfg_config.imgQuality}`,
             ]
             let PriorityInfo = [
-                `天气：${Cfg.priority[0].weather}`,
-                `留言：${Cfg.priority[1].LeaveMessages}`
+                `天气：${Cfg_priority.weather}`,
+                `留言：${Cfg_priority.LeaveMessages}`
             ]
             const PriorityMsg = await common.makeForwardMsg(e, PriorityInfo, '优先级信息')
             const makeForwardMsg = await common.makeForwardMsg(e, [CgfInfo, PriorityMsg], 'San设置信息')

@@ -163,6 +163,33 @@ export async function readyaml(filePath) {
     });
   }
 
+  /**
+ * 将JavaScript对象转换为YAML格式并保存到指定路径的文件中。
+ *
+ * @param {Object} obj - 要序列化的JavaScript对象。
+ * @param {string} filePath - 目标YAML文件的完整路径。
+ * @param {Object} [options] - 可选参数，传递给yaml.dump以控制输出格式。
+ */
+export async function objectToYamlFile(obj, filePath, options = {}) {
+  try {
+      // 将对象转换为YAML字符串
+      const yamlString = yaml.dump(obj, options);
+
+      // 确保目录存在（如果需要）
+      const dir = path.dirname(filePath);
+      if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+      }
+
+      // 写入YAML字符串到文件
+      fs.writeFileSync(filePath, yamlString, 'utf8');
+
+  } catch (error) {
+      console.error(`将对象转换为YAML文件时出错:`, error.message);
+      throw error;
+  }
+}
+
     /**
      * 这是一个异步函数，用于设置优先级。
      *
@@ -170,8 +197,8 @@ export async function readyaml(filePath) {
      * @return {String} 返回找到的name属性值，如果没有找到则返回undefined。
      */
   export async function set_priority(name){
-      const obj = await readyaml('./plugins/San-plugin/config/config.yaml');
-      const priority = obj.priority.find(item => item[name] !== undefined)?.[name];
+      const obj = await readyaml('./plugins/San-plugin/config/priority.yaml');
+      const priority = obj[name];
       return priority;
   }
 

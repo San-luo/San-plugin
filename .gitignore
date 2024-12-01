@@ -1,7 +1,7 @@
 #忽略内容
 /node_modules/*
 /resources/face/*
-/config/*
+/config/*.yaml
 #换行符处理
 * text=auto eol=lf
 

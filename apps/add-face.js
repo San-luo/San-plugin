@@ -267,6 +267,10 @@ export class San_AddFace extends plugin {
         let keys = Object.keys(facelist)
         let msg =""
         let t =1
+        let addcode = await returnaddcode() //0关 1开
+        if (addcode = 0){
+            msg = msg +`注意: 表情功能已关闭 开启-> #san设置表情添加开启 `+ "\n"
+        }
         for (let i of keys){
             let facetag = facelist[i].list
             let number = facetag.length
