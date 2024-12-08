@@ -379,3 +379,17 @@ export async function makeEmoji(txt){
    output.pipe(fs.createWriteStream(outputPath));
   console.log('Image with text created!');
 }
+
+
+export async function createFolder(path) {
+          // 检查文件夹是否存在，如果不存在则创建
+          if (!fs.existsSync(path)) {
+            fs.mkdir(path, {
+                recursive: true
+            }, (err) => {
+                if (err) {
+                    console.error('创建文件夹失败:', err);
+                }
+            });
+        }
+}

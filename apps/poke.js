@@ -1,4 +1,5 @@
 import * as tool from '../models/tool.js';
+import fs from 'fs';
 //如果用户没有自定义api则使用默认api
 const DefaultApi =[
     "https://www.dmoe.cc/random.php",//樱花二次元图
@@ -21,6 +22,12 @@ export class San_Poke extends plugin {
 
    async poke(e) {
         //logger.info(e)
+            if(!fs.existsSync(`./plugins/San-plugin/resources/poke/api.yaml`)){
+            let random = Math.floor(Math.random() * DefaultApi.length)
+            let url = DefaultApi[random]
+            e.reply(segment.image(url));
+            return
+        }
         let randomlist = []
         const urllist = await tool.readyaml(`./plugins/San-plugin/resources/poke/api.yaml`)
         for (let i in urllist) {
@@ -29,13 +36,15 @@ export class San_Poke extends plugin {
                 randomlist.push(urllist[i].api)
             }            
         }
-
+        if(randomlist[0] === undefined){
+            let random = Math.floor(Math.random() * DefaultApi.length)
+            let url = DefaultApi[random]
+            e.reply(segment.image(url));
+            return
+        }
         let random = Math.floor(Math.random() * randomlist.length)
         let url = randomlist[random]
-        if(randomlist[0] === undefined){
-            random = Math.floor(Math.random() * DefaultApi.length)
-            url = DefaultApi[random]
-        }
+
         e.reply(segment.image(url));
         
     }

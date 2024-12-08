@@ -7,8 +7,15 @@ import path from 'path'
 logger.info('-------------------------')
 logger.info('San-plugin加载中....')
 logger.info('-------------------------')
-//如需更多可复制粘贴
 //info可替换为: debug mark error
+//检测空文件夹是否创建
+let FolderPath = [
+  `./plugins/San-plugin/resources/poke/img`,
+]
+for(let i of FolderPath){
+  tool.createFolder(i)
+}
+
   async function checkDependencies() {
     let packagejson = await tool.readFromJsonFile('./plugins/San-plugin/package.json')
     const dependencyList = Object.keys(packagejson.dependencies) 
@@ -85,6 +92,8 @@ async function SetConfig(){
     logger.error('San-plugin: 发生了错误:', error);
   }
 }
+
+
 
 await SetConfig()
 
