@@ -3,7 +3,7 @@
 import { segment } from 'oicq';
 import * as tool from '../models/tool.js';
 const master = tool.masterQQ()//获取主人QQ,可更改为指定qq号
-const cfg_priority = await tool.set_priority("leave-messages")
+const cfg_priority = await tool.set_priority("LeaveMessages")
  export class San_Leave_Message extends plugin {
     constructor() {
         super({

@@ -1,5 +1,6 @@
 import * as tool from '../models/tool.js';
 import fs from 'fs';
+const cfg_priority = await tool.set_priority("GroupPoke")
 //如果用户没有自定义api则使用默认api
 const DefaultApi =[
     "https://www.dmoe.cc/random.php",//樱花二次元图
@@ -11,7 +12,7 @@ export class San_Poke extends plugin {
             name: 'San-Plugin戳一戳',//插件名字，可以随便写
             dsc: '戳一戳随机表情包',//插件介绍，可以随便写
             event: 'notice.group.poke',//这个直接复制即可，别乱改
-            priority: -111,//执行优先级：数值越低越6
+            priority: cfg_priority,//执行优先级：数值越低越6
             rule: [
                 {
                     fnc: 'poke'
