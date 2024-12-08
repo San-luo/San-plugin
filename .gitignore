@@ -2,6 +2,7 @@
 /node_modules/*
 /resources/face/*
 /config/*.yaml
+/resources/poke/*.yaml
 #换行符处理
 * text=auto eol=lf
 

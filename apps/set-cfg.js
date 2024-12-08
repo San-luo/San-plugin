@@ -25,7 +25,7 @@ export class San_SetCfg extends plugin {
             e.reply("你不是我的主人哦")
             return false
         } 
-        let NumberReg = /^#?(散|san|San)设置([\u4e00-\u9fa5]*)?(\d*)?$/
+        let NumberReg = /^#?(散|san|San)设置([\u4e00-\u9fa5]*)?(-?\d*)?$/
         let str = e.msg
         const NumberMatch = str.match(NumberReg)
             let Cfg_config = await tool.readyaml('./plugins/San-plugin/config/config.yaml')  
@@ -40,7 +40,10 @@ export class San_SetCfg extends plugin {
                     break;
                 case `优先级留言`:
                     Cfg_priority.LeaveMessages = ChangeNumber ;
-                    break;                   
+                    break;
+                case `优先级戳一戳`:
+                    Cfg_priority.GroupPoke = ChangeNumber ;
+                    break;                    
                 default:
                     //e.reply("指令未匹配") ;
                     break;
@@ -95,7 +98,10 @@ export class San_SetCfg extends plugin {
                     break;
                 case `优先级留言`:
                     Cfg_priority.LeaveMessages = ChangeNumber ;
-                    break;                   
+                    break;   
+                case `优先级戳一戳`:
+                    Cfg_priority.GroupPoke = ChangeNumber ;
+                    break;                                 
                 default:
                     //e.reply("指令未匹配") ;
                     break;
@@ -126,7 +132,8 @@ export class San_SetCfg extends plugin {
             }
             let PriorityInfo = [
                 `天气：${Cfg_priority.weather}`,
-                `留言：${Cfg_priority.LeaveMessages}`
+                `留言：${Cfg_priority.LeaveMessages}`,
+                `戳一戳：${Cfg_priority.GroupPoke}`
             ]
             const PriorityMsg = await common.makeForwardMsg(e, PriorityInfo, '优先级信息')
             sendMsg.push(PriorityMsg)
