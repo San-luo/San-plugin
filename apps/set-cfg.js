@@ -21,11 +21,11 @@ export class San_SetCfg extends plugin {
   
     }
     async SetCfg (e) {
-        if (!tool.ismaster(e.user_id)) {
+        if (!(await tool.ismaster(e.user_id))) {
             e.reply('你不是我的主人哦')
             return false
         }
-        let NumberReg = /^#?(散|san|San)设置([\u4e00-\u9fa5]*)?(-?\d*)?$/
+        let NumberReg = /^#?(散|san|San)设置([\u4e00-\u9fa5\w\s]*)?(-?\d*)?$/
         let str = e.msg
         const NumberMatch = str.match(NumberReg)
             let Cfg_config = await tool.readyaml('./plugins/San-plugin/config/config.yaml')  
@@ -50,7 +50,7 @@ export class San_SetCfg extends plugin {
             }
 
 
-            let ButtonReg = /^#?(散|san|San)设置([\u4e00-\u9fa5]*)?(开启|关闭)$/
+            let ButtonReg = /^#?(散|san|San)设置([\u4e00-\u9fa5\w\s]*)?(开启|关闭)$/
             const ButtonMatch = str.match(ButtonReg)
             let ChangeButton
             let ButtonTag
@@ -82,6 +82,9 @@ export class San_SetCfg extends plugin {
                 case `表情添加仅主人`:
                     Cfg_config.add_onlyMaster = ChangeButton ;
                     break;  
+                case `戳一戳仅bot`:
+                    Cfg_config.add_onlyBot = ChangeButton ;
+                    break;
                 case `表情添加`:
                     Cfg_config.add_face = ChangeButton ;
                     break;                  
@@ -126,6 +129,7 @@ export class San_SetCfg extends plugin {
                 `图像质量：${Cfg_config.imgQuality}`,
                 `表情添加：${button(Cfg_config.add_face)}`,
                 `表情添加仅主人：${button(Cfg_config.add_onlyMaster)}`,
+                `戳一戳仅bot：${button(Cfg_config.add_onlyBot)}`,
             ]
             for (let i of CfgInfo){
                 sendMsg.push(i)

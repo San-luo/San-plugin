@@ -1,5 +1,6 @@
 imgQuality: 100
 add_face: false
-add_onlyMaster : false
+add_onlyMaster: false
+poke_onlyBot: true
 
 

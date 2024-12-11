@@ -22,7 +22,13 @@ export class San_Poke extends plugin {
     };
 
    async poke(e) {
-        //logger.info(e)
+        //logger.info(await isPokeOnlyOpen())
+        
+         if (await isPokeOnlyOpen()){
+           if (e.target_id !== Bot.uin){
+         return}
+         }  
+         
             if(!fs.existsSync(`./plugins/San-plugin/resources/poke/api.yaml`)){
             let random = Math.floor(Math.random() * DefaultApi.length)
             let url = DefaultApi[random]
@@ -50,4 +56,18 @@ export class San_Poke extends plugin {
         
     }
    
+}
+
+//返回戳一戳仅bot的状态
+async function isPokeOnlyOpen() {
+
+    let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
+
+    const TorF = Cfg.add_onlyBot
+
+    if (TorF) {
+        return true
+    }else{
+        return false
+    }
 }

@@ -178,7 +178,7 @@ export class San_AddFace extends plugin {
             return
         }
         if ((await isAddOnlyOpen())){
-            if (!tool.ismaster(e.user_id)) {
+            if (!(await (tool.ismaster(e.user_id))) {
                 e.reply('你不是我的主人哦')
                 return false
             }
@@ -222,7 +222,7 @@ export class San_AddFace extends plugin {
     }
 
     async addswitch(e) {
-        if (!tool.ismaster(e.user_id)) {
+        if (!(await tool.ismaster(e.user_id))) {
             e.reply('你不是我的主人哦')
             return false
         }
