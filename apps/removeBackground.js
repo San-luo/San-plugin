@@ -30,6 +30,7 @@ export class San_RemoveBackground extends plugin {
         if (sourceUrl) {
             let img = sourceUrl[0]
             //logger.info(img)
+            e.reply("收到图喽....")
             await getImg(e,img,apiUrl)
         }else{
             /** 设置上下文，后续接收到内容会执行hei方法 */
@@ -50,6 +51,7 @@ export class San_RemoveBackground extends plugin {
             return   
         }
         let img = sourceUrl[0]
+        e.reply("收到图喽....")
         await getImg(e,img,apiUrl)
         this.finish('receive')//结束上下文
 }
