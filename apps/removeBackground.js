@@ -26,7 +26,7 @@ export class San_RemoveBackground extends plugin {
             return;
         }
         let sourceUrl = await tool.getsource(e,true)
-        //logger.info(sourceUrl)       
+        //logger.error(sourceUrl)       
         if (sourceUrl) {
             let img = sourceUrl[0]
             //logger.info(img)
@@ -43,7 +43,7 @@ export class San_RemoveBackground extends plugin {
     async receive(e){
         let sourceUrl = await tool.getsource(this.e,true)
         //logger.info(this.e)
-        //logger.info(sourceUrl)
+        //logger.error(sourceUrl)
         if(sourceUrl === false){
             e.reply("错误,非图片格式",true)
             this.finish('receive')//结束上下文 
