@@ -419,16 +419,26 @@ export async function getsource(e, img = false) {
       source = (await e.friend.getChatHistory(e.source.time, 1)).pop()
     }
   }
-  if (!source) {
+  if (!source && img == false) {
       return false    
   }
   if (img) {
     let imgArr = []
-    for (let i of source.message) {
+    if(!source){
+      for (let i of e.message) {
         if (i.type == "image") {
         imgArr.push(i.url)
         }
     }
+    }else{
+        for (let i of source.message) {
+        if (i.type == "image") {
+        imgArr.push(i.url)
+        }
+    }
+    }
+    
+  
     if(imgArr.length == 0) {
         return false
     }else{
