@@ -1,5 +1,5 @@
 import * as tool from '../models/tool.js';
-import fs from 'fs';
+import fs, { appendFile } from 'fs';
 import common from '../../../lib/common/common.js';
 export class San_PokeApi_Set extends plugin {
     constructor() {
@@ -11,20 +11,29 @@ export class San_PokeApi_Set extends plugin {
             priority: -111,//执行优先级：数值越低越6
             rule: [
                 {
-                    reg: '^#?(散|san|San)?戳一戳api设置.*$',
-                    fnc: 'SetApi'
+                    reg: '^#?(散|san|San)?戳一戳api(设置|添加).*$',
+                    fnc: 'SetApi',
+                    permission: 'master'
                 },
                 {
                     reg: '^#?(散|san|San)?戳一戳api(开启|关闭|全部)?列表$',
-                    fnc: 'ApiList'
+                    fnc: 'ApiList',
+                    permission: 'master'
+                },
+                {
+                    reg: '^#?(散|san|San)?戳一戳api全部删除$',
+                    fnc: 'alldel',
+                    permission: 'master'
                 },
                 {
                     reg: '^#?(散|san|San)?戳一戳(api)?(开启|关闭)(?!.*(?:列表)).*$',
-                    fnc: 'SetState'
+                    fnc: 'SetState',
+                    permission: 'master'
                 },
                 {
                     reg: '^#?(散|san|San)?戳一戳(api)?全部(开启|关闭|)$',
-                    fnc: 'SetAll'
+                    fnc: 'SetAll',
+                    permission: 'master'
                 },
             ]
         });
@@ -32,11 +41,11 @@ export class San_PokeApi_Set extends plugin {
 
    async SetApi(e) {
     try {
-        const reg = /^#?(散|san|San)?戳一戳api设置([^\s]+)[\s,+：]+(.+)$/
+        const reg = /^#?(散|san|San)?戳一戳api(添加|设置)([^\s]+)[\s,+：]+(.+)$/
     let msg = e.msg;
     const match = msg.match(reg)
-    const name = match[2];
-    const url = match[3];
+    const name = match[3];
+    const url = match[4];
     let api = {
         [name]:{
             'api': url,
@@ -45,7 +54,7 @@ export class San_PokeApi_Set extends plugin {
     }
     if(!(fs.existsSync('./plugins/San-plugin/resources/poke/api.yaml'))){
         tool.objectToYamlFile( api,'./plugins/San-plugin/resources/poke/api.yaml')
-        e.reply(`戳一戳api设置成功`)
+        e.reply(`戳一戳api添加成功`)
     }else{
         let obj = await tool.readyaml('./plugins/San-plugin/resources/poke/api.yaml')
         obj[name] = {
@@ -53,10 +62,10 @@ export class San_PokeApi_Set extends plugin {
             'isopen': true
         }
         tool.objectToYamlFile( obj,'./plugins/San-plugin/resources/poke/api.yaml')
-        e.reply(`戳一戳api设置成功`)
+        e.reply(`戳一戳api添加成功`)
     }
     }catch(error){
-        await e.reply(`格式错误! 正确格式：\n#戳一戳api设置名称 url`)
+        await e.reply(`格式错误! 正确格式：\n#戳一戳api添加xx名称 url`)
         logger.error(error.toString())
     }
 
@@ -76,21 +85,26 @@ export class San_PokeApi_Set extends plugin {
         }
         let sendmsg=[`戳一戳api${tag}列表如下:`]
         let apilist = await tool.readyaml('./plugins/San-plugin/resources/poke/api.yaml')
-        for(let i in apilist){
-            switch(tag){
-                case '开启':
-                    if(apilist[i].isopen == true){sendmsg.push(makeapilist(i,apilist[i].api,apilist[i].isopen))};
-                    break;
-                case '关闭':
-                    if(apilist[i].isopen == false){sendmsg.push(makeapilist(i,apilist[i].api,apilist[i].isopen))};
-                    break
-                case '全部':
-                    sendmsg.push(makeapilist(i,apilist[i].api,apilist[i].isopen));
-                    break
-                default:
-                    break;
+        if(Object.keys(apilist).length === 0){
+                sendmsg.push("还没有添加戳一戳api哦!\n#戳一戳api添加xx名称 url")
+            }else{
+                for(let i in apilist){
+                    switch(tag){
+                        case '开启':
+                            if(apilist[i].isopen == true){sendmsg.push(makeapilist(i,apilist[i].api,apilist[i].isopen))};
+                            break;
+                        case '关闭':
+                            if(apilist[i].isopen == false){sendmsg.push(makeapilist(i,apilist[i].api,apilist[i].isopen))};
+                            break
+                        case '全部':
+                            sendmsg.push(makeapilist(i,apilist[i].api,apilist[i].isopen));
+                            break
+                        default:
+                            break;
+                    }
+                }
             }
-        }
+
         sendmsg = await common.makeForwardMsg(e,sendmsg,`戳一戳api${tag}列表`)
         e.reply(sendmsg)
     }
@@ -137,7 +151,15 @@ export class San_PokeApi_Set extends plugin {
             tool.objectToYamlFile(apilist,'./plugins/San-plugin/resources/poke/api.yaml')
             e.reply(`戳一戳api已全部${state}`)
         }
-    
+        
+        async alldel(e){
+            let apilist = await tool.readyaml('./plugins/San-plugin/resources/poke/api.yaml')
+            for(let i in apilist){
+                delete apilist[i]
+            }
+            tool.objectToYamlFile(apilist,'./plugins/San-plugin/resources/poke/api.yaml')
+            e.reply(`戳一戳api已全部删除`)
+        }
    
 }
   function makeapilist(name,url,isopen) {

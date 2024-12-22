@@ -1,7 +1,6 @@
 import yaml from 'js-yaml';
 import fs from 'fs';
 import path from 'path';
-import fsPromises from 'fs/promises';
 import puppeteer from 'puppeteer';
 import axios from 'axios';
 import common from '../../../lib/common/common.js';
@@ -144,24 +143,24 @@ export async function location_url(location) {
  * @param {String} filePath - 需要读取的YAML文件的路径。
  * @return {Promise} 返回一个Promise对象。
  */
+
 export async function readyaml(filePath) {
-    return new Promise((resolve, reject) => {
-      fs.readFile(filePath, 'utf8', (err, data) => {
-        if (err) {
-          console.error('读取yaml错误', err);
-          reject(err);
-          return;
-        }
-        try {
-          const obj = yaml.load(data);
-          resolve(obj);
-        } catch (err) {
-          console.error("yaml转换错误", err);
-          reject(err);
-        }
-      });
-    });
+  try {
+    const data = fs.readFileSync(filePath, 'utf8');
+    if (data.trim() === '') {
+      logger.warn('yaml文件为空');
+      return {}; // 返回一个空对象
+    }
+    return yaml.load(data);
+  } catch (err) {
+    logger.error('读取或解析yaml错误', err);
+    throw err; // 抛出错误以便调用者处理
   }
+}
+
+
+
+
 
   /**
  * 将JavaScript对象转换为YAML格式并保存到指定路径的文件中。
@@ -185,7 +184,7 @@ export async function objectToYamlFile(obj, filePath, options = {}) {
       fs.writeFileSync(filePath, yamlString, 'utf8');
 
   } catch (error) {
-      console.error(`将对象转换为YAML文件时出错:`, error.message);
+      logger.error(`将对象转换为YAML文件时出错:`, error.message);
       throw error;
   }
 }
@@ -287,6 +286,11 @@ export async function readFromJsonFile(filePath) {
         reject(err);
         return;
       }
+      if (data === '') {
+        logger.warn('json文件为空');
+        resolve({}); // 或者你可以选择reject一个新的错误
+        return;
+      }
       try {
         const obj = JSON.parse(data);
         resolve(obj);
@@ -297,6 +301,10 @@ export async function readFromJsonFile(filePath) {
     });
   });
 }
+
+
+
+
 
 
 /**
@@ -318,18 +326,18 @@ export async function downloadImage(url, targetPath) {
     response.data.pipe(writer);
     // 监听管道完成事件
     writer.on('finish', () => {
-      console.log(`文件已保存至 ${targetPath}`);
+      logger.log(`文件已保存至 ${targetPath}`);
     });
     // 监听错误事件
     writer.on('error', error => {
-      console.error(`下载文件失败: ${error.message}`);
+      logger.error(`下载文件失败: ${error.message}`);
     });
     // 如果响应结束前写入发生错误，则取消响应
     writer.on('close', () => {
       response.data.destroy();
     });
   }).catch(error => {
-    console.error(`下载文件失败: ${error.message}`);
+    logger.error(`下载文件失败: ${error.message}`);
   });
 }
 
@@ -347,9 +355,9 @@ export async function countFilesInDirectorySync(directoryPath) {
     return files.length;
   } catch (error) {
     if (error.code === 'ENOENT') {
-      console.error(`目录不存在： ${directoryPath}`);
+      logger.error(`目录不存在： ${directoryPath}`);
     } else {
-      console.error(`读取目录失败： ${error.message}`);
+      logger.error(`读取目录失败： ${error.message}`);
     }
     return -1; //抛出异常
   }
@@ -377,7 +385,7 @@ export async function makeEmoji(txt){
   // 保存修改后的图片
   const output = canvas.createJPEGStream();
    output.pipe(fs.createWriteStream(outputPath));
-  console.log('Image with text created!');
+  logger.log('Image with text created!');
 }
 
 
@@ -387,18 +395,40 @@ export async function makeEmoji(txt){
  * @param {String} path - 需要检查的文件夹路径。
  * @return {Promise} 返回一个Promise对象
  */
-export async function checkFolder(path) {
-          // 检查文件夹是否存在，如果不存在则创建
-          if (!fs.existsSync(path)) {
-            fs.mkdir(path, {
-                recursive: true
-            }, (err) => {
-                if (err) {
-                    console.error('创建文件夹失败:', err);
-                }
-            });
+
+export async function checkPath(targetPath) {
+  try {
+    // 获取文件或目录的状态信息
+    fs.statSync(targetPath);
+} catch (err) {
+    if (err.code === 'ENOENT') {
+        // 如果路径不存在，判断是文件还是目录
+        if (path.extname(targetPath)) {
+            // 路径有扩展名，视为文件
+            try {
+                fs.writeFileSync(targetPath, '');
+                logger.log('文件已创建:', targetPath);
+            } catch (writeFileErr) {
+                logger.error('创建文件失败:', writeFileErr);
+            }
+        } else {
+            // 路径没有扩展名，视为目录
+            try {
+                fs.mkdirSync(targetPath, { recursive: true });
+                logger.log('目录已创建:', targetPath);
+            } catch (mkdirErr) {
+                logger.error('创建目录失败:', mkdirErr);
+            }
         }
+    } else {
+        logger.error('获取状态失败:', err);
+    }
 }
+}
+
+
+
+
 
 
 
@@ -459,7 +489,7 @@ export async function getsource(e, img = false) {
 export async function checkApi(url) {
   try {
     const response = await fetch(url);
-    //console.log(response)
+    //logger.log(response)
     return response.ok; // 返回true如果状态码是200-299，否则返回false
   } catch (error) {
     logger.error('Error accessing the API:', error);

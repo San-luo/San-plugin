@@ -11,9 +11,11 @@ logger.info('-------------------------')
 //检测空文件夹是否创建
 let FolderPath = [
   `./plugins/San-plugin/resources/poke/img`,
+  './plugins/San-plugin/resources/poke/api.yaml',
+  "./plugins/San-plugin/resources/face/userface.json",
 ]
 for(let i of FolderPath){
-  tool.checkFolder(i)
+  tool.checkPath(i)
 }
 
   async function checkDependencies() {
