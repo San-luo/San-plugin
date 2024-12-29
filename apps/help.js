@@ -2,14 +2,14 @@ import path from 'path';
 import url from 'url'
 import * as tool from '../models/tool.js';
 import { getBrowserInstance } from '../models/puppeteer.js';
-const Set_Quality = await tool.set_otherCfg(`imgQuality`)
+const Set_Quality = await tool.set_otherCfg(`imgQuality`);
 export class gete extends plugin {
     constructor() {
         super({
             name: 'San_help',
             dsc: 'San-plugin帮助',
             event: 'message',
-            priority: 1,
+            priority: -100,
             rule: [
                 {
                     reg: '^#?(散|san|San|san插件|San插件|散插件)(帮助|功能|help)$', 
@@ -27,7 +27,7 @@ export class gete extends plugin {
         // 新建一个页面
         const page = await browser.newPage();
         // 设置页面大小
-        await page.setViewport({ width: 800, height: 900 });
+        await page.setViewport({ width: 800, height: 1000 });
 
         // 打开HTML文件
         await page.goto(htmlPath);
@@ -38,7 +38,7 @@ export class gete extends plugin {
 
         const clip = {
             x: boundingBox.x - 20,
-            y: boundingBox.y - 20,
+            y: boundingBox.y ,
             width: boundingBox.width + 40,
             height: boundingBox.height + 40,
         };
@@ -47,6 +47,7 @@ export class gete extends plugin {
         const screenshotOptions = {
             clip,
             encoding: 'base64',
+            type: 'jpeg',
             quality: Set_Quality, // 设置图片质量范围是1到100
         };
         const screenshot = await page.screenshot(screenshotOptions);
