@@ -1,4 +1,5 @@
 import * as tool from '../models/tool.js';
+import { getBrowserInstance } from '../models/puppeteer.js';
 import puppeteer from 'puppeteer';
 const cfg_priority = await tool.set_priority("weather")
 
@@ -50,7 +51,7 @@ export class San_Weather extends plugin {
           const url = await tool.location_url(location,"weather")//网站url
           const selector = ".current-weather__bg"//选择器
           // 启动浏览器
-          const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+          const browser = await getBrowserInstance();
           //const browser = await puppeteer.launch({ headless: true, args: ['--disable-setuid-sandbox'] });
           // 新建一个页面
           const page = await browser.newPage();
@@ -90,8 +91,9 @@ export class San_Weather extends plugin {
           // 发送图片
           e.reply(segment.image(`base64://${screenshot}`))
       
-          // 关闭浏览器
-          browser.close();
+          
+          // 关闭页面
+    await page.close();
       }
 
 
@@ -100,7 +102,7 @@ export class San_Weather extends plugin {
         const url = "https://www.qweather.com/weather/"
         const selector = ".c-city-warning-around"//选择器
         // 启动浏览器
-        const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+        const browser = await getBrowserInstance();
         //const browser = await puppeteer.launch({ headless: true, args: ['--disable-setuid-sandbox'] });
         // 新建一个页面
         const page = await browser.newPage();
@@ -160,8 +162,9 @@ export class San_Weather extends plugin {
         // 发送图片
         e.reply(segment.image(`base64://${screenshot}`))
     
-        // 关闭浏览器
-        browser.close();
+        
+        // 关闭页面
+    await page.close();
     }
 
 
@@ -190,7 +193,7 @@ export class San_Weather extends plugin {
         logger.info(url)
         const selector = ".c-city-air-forecast"//选择器
         // 启动浏览器
-        const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+        const browser = await getBrowserInstance();
         //const browser = await puppeteer.launch({ headless: true, args: ['--disable-setuid-sandbox'] });
         // 新建一个页面
         const page = await browser.newPage();
@@ -214,7 +217,7 @@ export class San_Weather extends plugin {
     
         const clip = {
           x: 0   ,
-          y: 60 ,
+          y: 100 ,
           width: 600,
           height: 740,
         };
@@ -233,8 +236,9 @@ export class San_Weather extends plugin {
         // 发送图片
         e.reply(segment.image(`base64://${screenshot}`))
     
-        // 关闭浏览器
-        browser.close();
+        
+        // 关闭页面
+      await page.close();
       }
 
     }
