@@ -1,9 +1,7 @@
 import * as tool from '../models/tool.js';
 import { getBrowserInstance } from '../models/puppeteer.js';
-import puppeteer from 'puppeteer';
 const cfg_priority = await tool.set_priority("weather")
 
-const Set_Quality = await tool.set_otherCfg(`imgQuality`)
 export class San_Weather extends plugin {
     constructor () {
       super({
@@ -83,7 +81,7 @@ export class San_Weather extends plugin {
               fullPage: false,
               clip: clip ,// 使用传递进来的裁剪区域
               type: 'jpeg',
-              quality: Set_Quality ,// JPEG图片的质量，范围是1到100
+              quality: await tool.set_otherCfg(`imgQuality`) ,// JPEG图片的质量，范围是1到100
               omitBackground: true, // 防止背景颜色影响透明度
               encoding: 'base64'
           });
@@ -154,7 +152,7 @@ export class San_Weather extends plugin {
             fullPage: false,
             clip: clip ,// 使用传递进来的裁剪区域
             type: 'jpeg',
-            quality: Set_Quality ,// JPEG图片的质量，范围是1到100
+            quality: await tool.set_otherCfg(`imgQuality`) ,// JPEG图片的质量，范围是1到100
             omitBackground: true, // 防止背景颜色影响透明度
             encoding: 'base64'
         });
@@ -179,7 +177,7 @@ export class San_Weather extends plugin {
       let match = str.match(reg)
       //logger.error(match)
 
-if(match[3] == ``){
+if(match[3] === undefined){
       switch(match[1]){
         case ``:
           await locationAir(e,"北京")
@@ -203,7 +201,7 @@ if(match[3] == ``){
   } 
 
 }
-
+      //指定地区的空气截图
       async function locationAir(e,location){
         const url = await tool.location_url(location,"air")//网站url
         logger.info(url)
@@ -214,7 +212,7 @@ if(match[3] == ``){
         // 新建一个页面
         const page = await browser.newPage();
         // 设置页面大小
-        await page.setViewport({ width: 600, height: 900 });
+        await page.setViewport({ width: 600, height: 1300 });
     
         // 打开HTML文件
         await page.goto(url, { waitUntil: 'networkidle2' ,timeout: 10000});
@@ -235,7 +233,7 @@ if(match[3] == ``){
           x: 0   ,
           y: 100 ,
           width: 600,
-          height: 740,
+          height: 1250,
         };
 
         // 将页面渲染为图片并保存到本地
@@ -244,7 +242,7 @@ if(match[3] == ``){
             fullPage: false,
             clip: clip ,// 使用传递进来的裁剪区域
             type: 'jpeg',
-            quality: Set_Quality ,// JPEG图片的质量，范围是1到100
+            quality: await tool.set_otherCfg(`imgQuality`) ,// JPEG图片的质量，范围是1到100
             omitBackground: true, // 防止背景颜色影响透明度
             encoding: 'base64'
         });
@@ -298,7 +296,7 @@ if(match[3] == ``){
             fullPage: false,
             clip: clip ,// 使用传递进来的裁剪区域
             type: 'jpeg',
-            quality: Set_Quality ,// JPEG图片的质量，范围是1到100
+            quality: await tool.set_otherCfg(`imgQuality`) ,// JPEG图片的质量，范围是1到100
             omitBackground: true, // 防止背景颜色影响透明度
             encoding: 'base64'
         });

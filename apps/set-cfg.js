@@ -30,8 +30,16 @@ export class San_SetCfg extends plugin {
             let Cfg_config = await tool.readyaml('./plugins/San-plugin/config/config.yaml')  
             let Cfg_priority = await tool.readyaml('./plugins/San-plugin/config/priority.yaml') 
             let ChangeNumber = parseInt(NumberMatch[3],10)
+            //logger.info(ChangeNumber)
+            if(NumberMatch[3] == undefined){
+                NumberMatch[2] = "空数据"//即不执行数据操作
+                //logger.info(NumberMatch[2])
+            }
             switch (NumberMatch[2]) {
                 case `图像质量`:
+                    Cfg_config.imgQuality = ChangeNumber ;
+                    break;
+                case `图片质量`:
                     Cfg_config.imgQuality = ChangeNumber ;
                     break;
                 case `优先级去背景`:
