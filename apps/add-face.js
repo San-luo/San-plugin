@@ -5,6 +5,7 @@ import path from 'path';
 import common from '../../../lib/common/common.js';
 let user_tags = {}//用作中转变量
 let laidianNub = 10 //来点表情 的发送表情数量(聊天记录形式)
+const maxAttempts = 10 //最大尝试重新发送次数
 
 let faceFile = "./plugins/San-plugin/resources/face/userface.json"
 export class San_AddFace extends plugin {
@@ -403,45 +404,51 @@ export class San_AddFace extends plugin {
 
     async laidian(e){
         // laidianNub默认值定义在代码顶部 默认为10
-        const msg = e.msg 
-        const reg = /^#?(散|san|San)?来点(.*)$/
-        let match = msg.match(reg)
-        if(match[2] == ""){
-            e.reply("表情名称为空!")
-            return
+        let code = undefined
+        let atteptCount = 0
+        while(atteptCount < maxAttempts && code === undefined){
+            const msg = e.msg 
+            const reg = /^#?(散|san|San)?来点(.*)$/
+            let match = msg.match(reg)
+            if(match[2] == ""){
+                e.reply("表情名称为空!")
+                return
+            }
+            let obj = await tool.readFromJsonFile(faceFile)
+            //logger.info(obj)
+            let facelist = obj[match[2]].list
+            if(facelist.length < 10){laidianNub = facelist.length}
+            let replymsg = []
+            for(let i = 0; i < laidianNub; i++){
+                const randomIndex = Math.floor(Math.random() * facelist.length);
+                let face = facelist.splice(randomIndex, 1)[0]; // 移除并返回该元素
+                const matchType = face.type
+                //以下为iamge消息的处理
+                if (matchType == "image") {
+                    replymsg.push(segment.image(face.imageFile))
+                }//image消息处理完毕
+
+                //以下为other消息的处理
+                if (matchType == "other") {
+                    replymsg.push(face.msg)
+                }//other消息处理完毕  
+
+                //以下下为text消息的处理
+                if (matchType == "text") {
+                    replymsg.push(obj[msg].list[randomIndex].content)
+                }//text消息处理完毕
+
+                //以下下为face消息的处理
+                if (matchType == "face") {
+                    replymsg.push(segment.face(obj[msg].list[randomIndex].id))
+                }//face消息处理完毕
+            }
+
+            atteptCount++
+            let sendmsg = await common.makeForwardMsg(e,replymsg,`-${match[2]}-`)
+            code = await e.reply(sendmsg) //如果发送失败该值为undefined
+            logger.error(code,`第${atteptCount}次尝试重新发送`)
         }
-        let obj = await tool.readFromJsonFile(faceFile)
-        //logger.info(obj)
-        let facelist = obj[match[2]].list
-        if(facelist.length < 10){laidianNub = facelist.length}
-        let replymsg = []
-        for(let i = 0; i < laidianNub; i++){
-            const randomIndex = Math.floor(Math.random() * facelist.length);
-            let face = facelist.splice(randomIndex, 1)[0]; // 移除并返回该元素
-            const matchType = face.type
-            //以下为iamge消息的处理
-            if (matchType == "image") {
-                replymsg.push(segment.image(face.imageFile))
-            }//image消息处理完毕
-
-            //以下为other消息的处理
-            if (matchType == "other") {
-                replymsg.push(face.msg)
-            }//other消息处理完毕  
-
-            //以下下为text消息的处理
-            if (matchType == "text") {
-                replymsg.push(obj[msg].list[randomIndex].content)
-            }//text消息处理完毕
-
-            //以下下为face消息的处理
-            if (matchType == "face") {
-                replymsg.push(segment.face(obj[msg].list[randomIndex].id))
-            }//face消息处理完毕
-        }
-        let sendmsg = await common.makeForwardMsg(e,replymsg,`-${match[2]}-`)
-        e.reply(sendmsg)
-        
     }
 
 
