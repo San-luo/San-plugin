@@ -259,11 +259,10 @@ export function convertTime(input, direction) {
  * @param {Object} obj - 需要被写入文件的对象。
  * @param {String} filePath - 目标文件的完整路径。
  */
-export function JsonWrite(obj, filePath) {
+export async function JsonWrite(obj, filePath,creat = false) {
   try {
-    const dirPath = path.dirname(filePath); // 获取文件所在目录
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, { recursive: true }); // 递归创建目录
+    if (creat) {
+      await checkPath(filePath)
     }
     fs.writeFileSync(filePath, JSON.stringify(obj, null, 2)); // 写入文件
   } catch (err) {
@@ -281,13 +280,17 @@ export function JsonWrite(obj, filePath) {
  * @param {String} filePath - 需要读取的JSON文件的路径。
  * @return {Promise<Object>} 返回一个Promise对象，该对象在成功时解析为从JSON文件中读取并解析的对象，失败时则抛出错误。
  */
-export async function readFromJsonFile(filePath) {
+export async function readFromJsonFile(filePath,create = false) {
+        if(create){
+            await checkPath(filePath)
+      }
   try {
+
     // 读取文件内容
     const data = await readFile(filePath, 'utf8');
     
     if (data === '') {
-      logger.warn('json文件为空');
+      //logger.warn('json文件为空');
       return {}; // 或者你可以选择抛出一个新的错误
     }
 
