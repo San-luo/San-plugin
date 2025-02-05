@@ -64,8 +64,14 @@ export class San_AddFace extends plugin {
         }
         }
 
-
-
+        let Rand//获取消息随机数
+        if(this.e?.real_id){
+            //logger.info(this.e?.real_id)
+            Rand = this.e.message_id// 目标rand值
+        }else{
+            Rand = this.e.rand// 目标rand值
+        }
+        
         //以下为image类型的消息处理
         if (msgtype == "image") {
             const imgNumber = await tool.countFilesInDirectorySync(`./plugins/San-plugin/resources/face/images`)
@@ -86,6 +92,7 @@ export class San_AddFace extends plugin {
                             'type': this.e.message[0].type,
                             'url': this.e.message[0].url,
                             'imageFile': imageFile,
+                            'rand': [Rand],
 
                         },
                         ]
@@ -100,6 +107,7 @@ export class San_AddFace extends plugin {
                             'type': this.e.message[0].type,
                             'url': this.e.message[0].url,
                             'imageFile': imageFile,
+                            'rand': [Rand],
                         }
                     )
 
@@ -113,6 +121,7 @@ export class San_AddFace extends plugin {
                         'type': this.e.message[0].type,
                         'url': this.e.message[0].url,
                         'imageFile': imageFile,
+                        'rand': [Rand],
 
                     },
                     ]
@@ -136,7 +145,8 @@ export class San_AddFace extends plugin {
                         'user_id': e.user_id,
                         'time': tool.convertTime(Date.now(), 0),
                         'type': "other",
-                        'msg': this.e.message
+                        'msg': this.e.message,
+                        'rand': [Rand],
                     },
                     ]
                 }
@@ -148,7 +158,8 @@ export class San_AddFace extends plugin {
                         'user_id': e.user_id,
                         'time': tool.convertTime(Date.now(), 0),
                         'type': "other",
-                        'msg': this.e.message
+                        'msg': this.e.message,
+                        'rand': [Rand],
                     },
                     ]
                 }
@@ -160,7 +171,8 @@ export class San_AddFace extends plugin {
                         'user_id': e.user_id,
                         'time': tool.convertTime(Date.now(), 0),
                         'type': "other",
-                        'msg': this.e.message
+                        'msg': this.e.message,
+                        'rand': [Rand],
                     }
                 )
 
@@ -589,7 +601,12 @@ async function addface(e,tag){
     //const tag = user_tags[e.user_id].tag
         let msg = e.msg
         let msgtype = e.message[0].type
-
+        let Rand
+        if(e?.real_id){
+            Rand = e.message_id// 目标rand值
+        }else{
+            Rand = e.rand// 目标rand值
+        }
 
 
 
@@ -597,7 +614,7 @@ async function addface(e,tag){
         if (msgtype == "image") {
             const imgNumber = await tool.countFilesInDirectorySync(`./plugins/San-plugin/resources/face/images`)
             //image下载至本地
-            let imageFile = `./plugins/San-plugin/resources/face/images/${imgNumber + 1}.gif`
+            let imageFile = `./plugins/San-plugin/resources/face/images/${tool.getId()}.gif`
             let url = e.message[0].url
             await tool.downloadImage(url, imageFile)
 
@@ -613,6 +630,7 @@ async function addface(e,tag){
                             'type': e.message[0].type,
                             'url': e.message[0].url,
                             'imageFile': imageFile,
+                            'rand': [Rand],
 
                         },
                         ]
@@ -627,6 +645,7 @@ async function addface(e,tag){
                             'type': e.message[0].type,
                             'url': e.message[0].url,
                             'imageFile': imageFile,
+                            'rand': [Rand],
                         }
                     )
 
@@ -640,6 +659,7 @@ async function addface(e,tag){
                         'type': e.message[0].type,
                         'url': e.message[0].url,
                         'imageFile': imageFile,
+                        'rand': [Rand],
 
                     },
                     ]
@@ -659,7 +679,8 @@ async function addface(e,tag){
                         'user_id': e.user_id,
                         'time': tool.convertTime(Date.now(), 0),
                         'type': "other",
-                        'msg': e.message
+                        'msg': e.message,
+                        'rand': [Rand],
                     },
                     ]
                 }
@@ -671,7 +692,8 @@ async function addface(e,tag){
                         'user_id': e.user_id,
                         'time': tool.convertTime(Date.now(), 0),
                         'type': "other",
-                        'msg': e.message
+                        'msg': e.message,
+                        'rand': [Rand],
                     },
                     ]
                 }
@@ -683,7 +705,8 @@ async function addface(e,tag){
                         'user_id': e.user_id,
                         'time': tool.convertTime(Date.now(), 0),
                         'type': "other",
-                        'msg': e.message
+                        'msg': e.message,
+                        'rand': [Rand],
                     }
                 )
 
