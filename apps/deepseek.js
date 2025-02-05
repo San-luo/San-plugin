@@ -2,8 +2,8 @@ import * as tool from '../models/tool.js';
 import OpenAI from 'openai';
 import fs from 'fs';
 import common from '../../../lib/common/common.js';
-const apiKey = "sk-gmtnxmepzkkwcypzhzjzquqgbvghewhueyorqgdeauodjnwi" 
-//api注册地址https://cloud.siliconflow.cn/i/k8KVk0zo  填邀请码让我嫖一嫖let history = {}
+const config = await tool.readyaml("./plugins/San-plugin/resources/AI/config/config.yaml")
+//api注册地址https://cloud.siliconflow.cn/i/k8KVk0zo  填邀请码让我嫖一嫖
 const historypath = "./plugins/San-plugin/resources/AI/history.json"
 export class dpai extends plugin {
     constructor() {
@@ -26,6 +26,12 @@ export class dpai extends plugin {
     }
 
     async deepseek(e){
+        const apikey = config.apikey
+        //logger.info(apikey)
+        if(apikey == ""){
+            e.reply("请先配置apikey\n请在San-plugin/resources/AI/config.yaml中配置apikey\n请在https://cloud.siliconflow.cn/i/k8KVk0zo 申请apikey")
+            return
+        }
         e.reply("~~~~~~~~~~",true,{ recallMsg: 4 })
         let history = await tool.readFromJsonFile(historypath, true)
         let msg = e.msg
@@ -40,7 +46,7 @@ export class dpai extends plugin {
 
         let fullResponse = '';
         const openai = new OpenAI({
-        apiKey: apiKey,
+        apiKey: apikey,
         baseURL: 'https://api.siliconflow.cn/v1',
         });
         const completion = await openai.chat.completions.create({

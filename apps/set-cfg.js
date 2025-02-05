@@ -155,6 +155,7 @@ export class San_SetCfg extends plugin {
             });
             let sendMsg = []
             let CfgInfo =[
+                `----详细配置可上锅巴进行更改----`,
                 `图像质量：${Cfg_config.imgQuality}`,
                 `表情添加：${button(Cfg_config.add_face)}`,
                 `表情添加仅主人：${button(Cfg_config.add_onlyMaster)}`,

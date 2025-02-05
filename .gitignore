@@ -1,7 +1,8 @@
 #忽略内容
 /node_modules/*
 /resources/face/*
-/resources/AI/*
+/resources/AI/history.json
+/resources/AI/config/*.yaml
 /resources/poke/*
 /config/*.yaml
 

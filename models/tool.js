@@ -1,18 +1,18 @@
 import yaml from 'js-yaml';
-import fs from 'fs';
+import fsS from 'fs';
+const fs = fsS.promises;
 import path from 'path';
 import puppeteer from 'puppeteer';
 import axios from 'axios';
 import common from '../../../lib/common/common.js';
 import config from '../../../lib/config/config.js'
-import { stat, writeFile, mkdir, readFile } from 'fs/promises';
 /**
  * 获取主人qq号
  * 返回number 类型
  */
 export function masterQQ(){
     // // 读取YAML文件
-    // const fileContents = fs.readFileSync('./config/config/other.yaml', 'utf8');
+    // const fileContents = await fs.readFile('./config/config/other.yaml', 'utf8');
     // // 将YAML内容解析为JavaScript对象
     // const data = yaml.load(fileContents);
     // // 获取键的值
@@ -33,7 +33,7 @@ export function masterQQ(){
  * @return {Boolean} 如果输入的QQ在masterQQ列表中，返回true；否则，返回false。
  */
 export function ismaster(qq){
-  // const fileContents = fs.readFileSync('./config/config/other.yaml', 'utf8');
+  // const fileContents = await fs.readFile('./config/config/other.yaml', 'utf8');
   //   // 将YAML内容解析为JavaScript对象
   //   const data = yaml.load(fileContents);
     // 获取键的值
@@ -56,7 +56,7 @@ export async function screenshot(e, gopath, clipRegion, outpath = "./plugins/San
     let url;
 
     // 检查是否是一个文件路径
-    if (fs.existsSync(gopath) && fs.lstatSync(gopath).isFile()) {
+    if (await fs.access(gopath) && await fs.lstat(gopath).isFile()) {
         // 如果是文件路径，则直接使用该路径
         url = `file://${path.resolve(gopath)}`;
     } else {
@@ -95,7 +95,7 @@ export async function screenshot(e, gopath, clipRegion, outpath = "./plugins/San
     browser.close();
     // 异步删除文件
     try {
-        await fs.promises.unlink(outpath);
+        await fs.unlink(outpath);
     } catch (err) {
         logger.error(`——————San-plugin报错————`);
         logger.error(err);
@@ -149,7 +149,7 @@ export async function location_url(location,type) {
 
 export async function readyaml(filePath) {
   try {
-    const data = fs.readFileSync(filePath, 'utf8');
+    const data = await fs.readFile(filePath, 'utf8');
     if (data.trim() === '') {
       logger.warn('yaml文件为空');
       return {}; // 返回一个空对象
@@ -179,12 +179,12 @@ export async function objectToYamlFile(obj, filePath, options = {}) {
 
       // 确保目录存在（如果需要）
       const dir = path.dirname(filePath);
-      if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir, { recursive: true });
+      if (!(await fs.access(dir))) {
+          await fs.mkdir(dir, { recursive: true });
       }
 
       // 写入YAML字符串到文件
-      fs.writeFileSync(filePath, yamlString, 'utf8');
+      await fs.writeFile(filePath, yamlString, 'utf8');
 
   } catch (error) {
       logger.error(`将对象转换为YAML文件时出错:`, error.message);
@@ -264,7 +264,7 @@ export async function JsonWrite(obj, filePath,creat = false) {
     if (creat) {
       await checkPath(filePath)
     }
-    fs.writeFileSync(filePath, JSON.stringify(obj, null, 2)); // 写入文件
+    await fs.writeFile(filePath, JSON.stringify(obj, null, 2)); // 写入文件
   } catch (err) {
     if (err.code !== 'EEXIST') { // 如果不是目录已存在的错误，则记录错误
       logger.error(err);
@@ -287,7 +287,7 @@ export async function readFromJsonFile(filePath,create = false) {
   try {
 
     // 读取文件内容
-    const data = await readFile(filePath, 'utf8');
+    const data = await fs.readFile(filePath, 'utf8');
     
     if (data === '') {
       //logger.warn('json文件为空');
@@ -328,7 +328,7 @@ export async function downloadImage(url, targetPath) {
     responseType: 'stream'
   }).then(response => {
     // 创建一个可写的流，它允许写入文件系统
-    const writer = fs.createWriteStream(targetPath);
+    const writer = fsS.createWriteStream(targetPath);
     // 管道流
     response.data.pipe(writer);
     // 监听管道完成事件
@@ -357,7 +357,7 @@ export async function downloadImage(url, targetPath) {
 export async function countFilesInDirectorySync(directoryPath) {
   try { 
     // 同步读取目录内容
-    const files = fs.readdirSync(directoryPath);
+    const files = await fs.readdir(directoryPath);
     // 返回文件数量
     return files.length;
   } catch (error) {
@@ -391,7 +391,7 @@ export async function makeEmoji(txt){
 
   // 保存修改后的图片
   const output = canvas.createJPEGStream();
-   output.pipe(fs.createWriteStream(outputPath));
+   output.pipe(fsS.createWriteStream(outputPath));
   logger.info('Image with text created!');
 }
 
@@ -407,7 +407,7 @@ export async function makeEmoji(txt){
 export async function checkPath(targetPath) {
   try {
     // 获取文件或目录的状态信息
-    await stat(targetPath);
+    await fs.stat(targetPath);
   } catch (err) {
     if (err.code === 'ENOENT') {
       // 如果路径不存在，判断是文件还是目录
@@ -416,8 +416,8 @@ export async function checkPath(targetPath) {
         const dir = path.dirname(targetPath);
         try {
           // 确保文件所在的目录存在
-          await mkdir(dir, { recursive: true });
-          await writeFile(targetPath, '');
+          await fs.mkdir(dir, { recursive: true });
+          await fs.writeFile(targetPath, '');
           logger.info('文件已创建:', targetPath); 
         } catch (writeFileErr) {
           logger.error('创建文件失败:', writeFileErr); 
@@ -425,7 +425,7 @@ export async function checkPath(targetPath) {
       } else {
         // 路径没有扩展名，视为目录
         try {
-          await mkdir(targetPath, { recursive: true });
+          await fs.mkdir(targetPath, { recursive: true });
           logger.info('目录已创建:', targetPath); 
         } catch (mkdirErr) {
           logger.error('创建目录失败:', mkdirErr); 

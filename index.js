@@ -1,8 +1,9 @@
-import fs from 'fs';
+import fsS from 'fs';
+const fs = fsS.promises;
 import * as tool from './models/tool.js';
-import cfg from '../../lib/config/config.js'
+import cfg from '../../lib/config/config.js';
 import common from '../../lib/common/common.js';
-import path from 'path'
+import path from 'path';
 //输出提示
 logger.info('-------------------------')
 logger.info('San-plugin加载中....')
@@ -40,68 +41,12 @@ for(let i of FolderPath){
   // 调用函数
   checkDependencies();
 
+await setConfig('./plugins/San-plugin/config/default_config','./plugins/San-plugin/config')
 
-async function SetConfig(){
-  try{
-    const df_Cfg =  new Set(fs.readdirSync('./plugins/San-plugin/config/default_config').filter(file => file.endsWith('.yaml')));
-    const Cfg =  new Set(fs.readdirSync('./plugins/San-plugin/config').filter(file => file.endsWith('.yaml')))
-    const unload =  [...df_Cfg].filter(x => !Cfg.has(x));//获取未载入的Cfg文件
-    //logger.error(unload)
-  
-    if (unload.length !== 0) {
-      for (let i of unload) {
-        const src = path.resolve(`./plugins/San-plugin/config/default_config/${i}`);
-        const dest = path.resolve(`./plugins/San-plugin/config/${i}`);
-    
-        // 使用 fs.copyFile 的回调形式
-        fs.copyFile(src, dest, (err) => {
-          if (err) {
-            logger.error('San-plugin: 配置文件复制过程中发生错误:', err);
-          } else {
-            logger.info(`San-plugin: 成功复制配置文件: ${i}`);
-          }
-        });
-      }
-    }
-  
-    // 对比已载入的配置文件并更新缺失的键
-  for (let file of Cfg) {
-    const defaultConfigPath = path.resolve(`./plugins/San-plugin/config/default_config/${file}`);
-    const currentConfigPath = path.resolve(`./plugins/San-plugin/config/${file}`);
-  
-    // 读取默认配置文件和当前配置文件内容
-    const defaultConfig = await tool.readyaml(defaultConfigPath)
-    let currentConfig;
-    try {
-        currentConfig = await tool.readyaml(currentConfigPath)
-    } catch (error) {
-        // 如果文件不存在或格式错误，默认创建一个空对象
-        currentConfig = {};
-    }
-    if (currentConfig === undefined){
-      currentConfig = {};
-    }
-    // 合并默认配置中的键到当前配置中（如果当前配置中没有）
-    Object.keys(defaultConfig).forEach(key => {
-        if (!(key in currentConfig)) {
-            currentConfig[key] = defaultConfig[key];
-            logger.info(`San-plugin: 更新配置文件 ${file} `);
-        }
-    });
-    // 保存更新后的配置文件
-    tool.objectToYamlFile(currentConfig,currentConfigPath)
-  }
-  }catch (error) {
-    logger.error('San-plugin: 发生了错误:', error);
-  }
-}
-
-
-
-await SetConfig()
+await setConfig('./plugins/San-plugin/resources/AI/config/default_config','./plugins/San-plugin/resources/AI/config')
 
 //加载插件
-const files = fs.readdirSync('./plugins/San-plugin/apps').filter(file => file.endsWith('.js'))
+const files = await fsS.readdirSync('./plugins/San-plugin/apps').filter(file => file.endsWith('.js'))
 
 let ret = []
 
@@ -124,3 +69,84 @@ for (let i in files) {
 
 
 export { apps }
+
+
+
+/**
+ * 异步设置配置文件函数
+ * 该函数旨在确保当前配置目录下的配置文件与默认配置目录下的一致
+ * 如果当前配置中缺少默认配置中的项，则会自动补充
+ * 
+ * @param {string} dfConfigDir 默认配置目录路径
+ * @param {string} configDir 当前配置目录路径
+ */
+async function setConfig(dfConfigDir, configDir) {
+  try {
+    // 获取默认配置文件和当前配置文件列表
+    const df_Cfg = new Set((await fs.readdir(dfConfigDir)).filter(file => file.endsWith('.yaml')));
+    const Cfg = new Set((await fs.readdir(configDir)).filter(file => file.endsWith('.yaml')));
+
+    // 获取未载入的配置文件
+    const unload = [...df_Cfg].filter(x => !Cfg.has(x));
+
+    // 如果有未载入的配置文件，将其从默认配置目录复制到当前配置目录
+    if (unload.length !== 0) {
+      for (let file of unload) {
+        const src = path.join(dfConfigDir, file);
+        const dest = path.join(configDir, file);
+
+        try {
+          await fs.copyFile(src, dest);
+          logger.info(`San-plugin: 成功复制配置文件: ${file}`);
+        } catch (err) {
+          logger.error(`San-plugin: 配置文件复制过程中发生错误: ${err.message}`);
+        }
+      }
+    }
+
+    // 对比已载入的配置文件并更新缺失的键
+    for (let file of Cfg) {
+      const defaultConfigPath = path.join(dfConfigDir, file);
+      const currentConfigPath = path.join(configDir, file);
+
+      // 读取默认配置文件和当前配置文件内容
+      let defaultConfig, currentConfig;
+
+      try {
+        defaultConfig = await tool.readyaml(defaultConfigPath);
+        currentConfig = await tool.readyaml(currentConfigPath);
+      } catch (error) {
+        logger.warn(`San-plugin: 读取配置文件 ${file} 时发生错误，使用默认配置`);//即视为二者无差异,不进行更改
+        defaultConfig = {};
+        currentConfig = {};
+      }
+
+      let hasChanged = false
+      // 合并默认配置中的键到当前配置中（如果当前配置中没有）
+      Object.keys(defaultConfig).forEach(key => {
+        if (!(key in currentConfig)) {
+          //currentConfig[key] = defaultConfig[key];
+          hasChanged = true
+          logger.info(`San-plugin: 更新配置文件 ${file}`);
+        }
+      });
+      //以默认cfg为模板(如注释)
+        for(let key in currentConfig){
+          defaultConfig[key] = currentConfig[key]
+        }
+
+
+
+      // 保存更新后的配置文件
+      try {
+        if(hasChanged){
+          await tool.objectToYamlFile(defaultConfig, currentConfigPath);
+        }
+      } catch (error) {
+        logger.error(`San-plugin: 保存配置文件 ${file} 时发生错误: ${error.message}`);
+      }
+    }
+  } catch (error) {
+    logger.error(`San-plugin: 发生了错误: ${error.message}`);
+  }
+}
