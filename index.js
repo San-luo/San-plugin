@@ -9,11 +9,12 @@ logger.info('-------------------------')
 logger.info('San-plugin加载中....')
 logger.info('-------------------------')
 //info可替换为: debug mark error
-//检测空文件夹是否创建
+//检测路径是否是否创建
 let FolderPath = [
   `./plugins/San-plugin/resources/poke/img`,
-  './plugins/San-plugin/resources/poke/api.yaml',
-  "./plugins/San-plugin/resources/face/userface.json",
+  `./plugins/San-plugin/resources/poke/api.yaml`,
+  `./plugins/San-plugin/resources/face/userface.json`,
+  `./plugins/San-plugin/resources/face/images`
 ]
 for(let i of FolderPath){
   tool.checkPath(i)

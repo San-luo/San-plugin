@@ -42,152 +42,45 @@ export class San_AddFace extends plugin {
     }
 
     async addnext(e) {
-        const tag = user_tags[this.e.user_id].tag
-        const iscontinous = user_tags[this.e.user_id]["iscontinous"]
-        let msg = this.e.msg
-        let msgtype = this.e.message[0].type
-        const stoplist = ['结束添加', '终止添加', '停止添加', '放弃添加', '终止','停止','放弃','#结束添加', '#终止添加', '#停止添加', '#放弃添加', '#终止','#停止','#放弃'];
-        if(iscontinous){
-            if (stoplist.includes(msg)) {
-                e.reply(`- ${tag} - 连续添加已结束`);
+        try {
+            const tag = user_tags[this.e.user_id].tag
+            const iscontinous = user_tags[this.e.user_id]["iscontinous"]
+            let msg = this.e.msg
+            const stoplist = ['结束添加', '终止添加', '停止添加', '放弃添加', '终止','停止',
+            '放弃','#结束添加', '#终止添加', '#停止添加', '#放弃添加', '#终止','#停止','#放弃'];
+
+            //判断是否结束
+            if(iscontinous){
+                if (stoplist.includes(msg)) {
+                    e.reply(`- ${tag} - 连续添加已结束`);
+                    delete user_tags[e.user_id]; // 清除用户的tag
+                    this.finish('addnext')
+                    return;
+                }
+            }else{
+                if (stoplist.includes(msg)) {
+                e.reply('已放弃本次添加');
                 delete user_tags[e.user_id]; // 清除用户的tag
                 this.finish('addnext')
                 return;
+                }
             }
-        }else{
-            if (stoplist.includes(msg)) {
-            e.reply('已放弃本次添加');
-            delete user_tags[e.user_id]; // 清除用户的tag
+
+            //添加表情
+            await HandelFace(this.e,tag)
+            
+            //判断是否结束
+            if(!iscontinous){
+                this.finish('addnext')                                 
+        }   
+        } catch (error) {
+            e.reply("出错辣")
+            logger.error(error)
             this.finish('addnext')
             return;
         }
-        }
 
-        let Rand//获取消息随机数
-        if(this.e?.real_id){
-            //logger.info(this.e?.real_id)
-            Rand = this.e.message_id// 目标rand值
-        }else{
-            Rand = this.e.rand// 目标rand值
-        }
-        
-        //以下为image类型的消息处理
-        if (msgtype == "image") {
-            const imgNumber = await tool.countFilesInDirectorySync(`./plugins/San-plugin/resources/face/images`)
-            //image下载至本地
-            let imageFile = `./plugins/San-plugin/resources/face/images/${tool.getId()}.gif`
-            let url = this.e.message[0].url
-            await tool.downloadImage(url, imageFile)
-
-            let date = {}
-            if (fs.existsSync(faceFile)) {
-                date = await tool.readFromJsonFile(faceFile)
-                if (date[tag] == undefined) {
-                    date[`${tag}`] = {
-
-                        'list': [{
-                            'user_id': e.user_id,
-                            'time': tool.convertTime(Date.now(), 0),
-                            'type': this.e.message[0].type,
-                            'url': this.e.message[0].url,
-                            'imageFile': imageFile,
-                            'rand': [Rand],
-
-                        },
-                        ]
-                    }
-                    //判断是否存在同名tag,存在则使用初始化方法，不存在则使用push方法
-                } else {
-
-                    date[tag].list.push(
-                        {
-                            'user_id': e.user_id,
-                            'time': tool.convertTime(Date.now(), 0),
-                            'type': this.e.message[0].type,
-                            'url': this.e.message[0].url,
-                            'imageFile': imageFile,
-                            'rand': [Rand],
-                        }
-                    )
-
-                }
-            } else {
-                date[`${tag}`] = {
-
-                    'list': [{
-                        'user_id': e.user_id,
-                        'time': tool.convertTime(Date.now(), 0),
-                        'type': this.e.message[0].type,
-                        'url': this.e.message[0].url,
-                        'imageFile': imageFile,
-                        'rand': [Rand],
-
-                    },
-                    ]
-                }
-            }//判断是否有userface文件,若无则进行初始化
-
-            tool.JsonWrite(date, faceFile)
-            e.reply(`${tag} 添加成功`)
-            if(!iscontinous){
-
-            this.finish('addnext')
-            }
-        }else{                  //image类型消息处理完毕
-            let date = {}
-            if (fs.existsSync(faceFile)) {
-                date = await tool.readFromJsonFile(faceFile)
-            } else {
-                date[`${tag}`] = {
-
-                    'list': [{
-                        'user_id': e.user_id,
-                        'time': tool.convertTime(Date.now(), 0),
-                        'type': "other",
-                        'msg': this.e.message,
-                        'rand': [Rand],
-                    },
-                    ]
-                }
-            }//判断是否有userface文件,若无则进行初始化
-            if (date[tag] == undefined) {
-                date[`${tag}`] = {
-
-                    'list': [{
-                        'user_id': e.user_id,
-                        'time': tool.convertTime(Date.now(), 0),
-                        'type': "other",
-                        'msg': this.e.message,
-                        'rand': [Rand],
-                    },
-                    ]
-                }
-                //判断是否存在同名tag,存在则使用初始化方法，不存在则使用push方法
-            } else {
-
-                date[tag].list.push(
-                    {
-                        'user_id': e.user_id,
-                        'time': tool.convertTime(Date.now(), 0),
-                        'type': "other",
-                        'msg': this.e.message,
-                        'rand': [Rand],
-                    }
-                )
-
-            }
-            tool.JsonWrite(date, faceFile)
-
-            delete user_tags[e.user_id]; // 清除用户的tag
-            e.reply(`${tag} 添加成功`)
-            if(!iscontinous){
-
-            this.finish('addnext')
-            }
-        }                           
-
-            
-    }
+}
 
     async add(e) {
         if (!(await isAddOpen())) {
@@ -200,47 +93,30 @@ export class San_AddFace extends plugin {
                 return false
             }
         }
-        // 检查文件夹是否存在，如果不存在则创建
-        if (!fs.existsSync("./plugins/San-plugin/resources/face/images")) {
-            fs.mkdir("./plugins/San-plugin/resources/face/images", {
-                recursive: true
-            }, (err) => {
-                if (err) {
-                    console.error('创建文件夹失败:', err);
-                }
-            });
-        } else {
-            console.log('文件夹已存在');
-        }
         
-
-
-
         let msg = e.msg
         let reg = /^#(批量|连续|多个|持续)?添加\s*(.*)$/;// ^#(批量|连续|多个|持续)?添加.*$
 
         let match = msg.match(reg)
         let iscontinous = match[1] ? true : false
-        logger.info(iscontinous)
         //logger.info(match)
         if (match[2] == '') {
-            this.finish('addnext')
             e.reply("tag禁止为空!")
             return
-        } else {
-            // 确保 user_tags 中有该用户的对象
-            if (!user_tags[e.user_id]) {
-                user_tags[e.user_id] = {};
-            }
-            user_tags[e.user_id]["tag"] = match[2] //获取到添加tag
-            user_tags[e.user_id]["iscontinous"] = iscontinous //获取到添加类型
-
         }
+
+        // 确保 user_tags 中有该用户的对象
+        if (!user_tags[e.user_id]) {
+            user_tags[e.user_id] = {};
+        }
+        user_tags[e.user_id]["tag"] = match[2] //获取到添加tag
+        user_tags[e.user_id]["iscontinous"] = iscontinous //获取到添加类型
+
         if(await tool.getsource(e)){//如果存在引用消息
             //logger.info(await tool.getsource(e))
             let source = await tool.getsource(e)
             source.reply=e.reply
-            await addface(source,match[2])
+            await HandelFace(source,match[2])
         }else{
         /** 设置上下文，后续接收到内容会执行hei方法 */
         this.setContext('addnext');   
@@ -478,21 +354,22 @@ export class San_AddFace extends plugin {
 
             atteptCount++
             let sendmsg = await common.makeForwardMsg(e,replymsg,`-${match[2]}-`)
+            logger.warn(code,`第${atteptCount}次尝试发送`)
             code = await e.reply(sendmsg) //如果发送失败该值为undefined
-            logger.error(code,`第${atteptCount}次尝试重新发送`)
+
+        }
+        if (code === undefined) {
+            e.reply("消息风控,发送失败辣")
         }
     }
 
 
 }
 
-
 //监听模式,废弃
 // Bot.on?.("message", async(e) => {
     
 // })
-
-
 
 //返回表情添加的状态
 async function isAddOpen() {
@@ -516,10 +393,6 @@ async function isAddOnlyOpen() {
         return false
     }
 }
-
-
-
-
 
 export async function facereply(e){
         if (!fs.existsSync(faceFile)) {
@@ -596,125 +469,53 @@ export async function facereply(e){
 
 
 
-async function addface(e,tag){
-    //logger.info(e)
-    //const tag = user_tags[e.user_id].tag
-        let msg = e.msg
-        let msgtype = e.message[0].type
-        let Rand
-        if(e?.real_id){
-            Rand = e.message_id// 目标rand值
-        }else{
-            Rand = e.rand// 目标rand值
+/**
+ * 处理用户发送的表情消息
+ * @param {Object} e - 用户消息对象,请传this.e
+ * @param {string} tag - 表情的tag标签
+ */
+async function HandelFace(e,tag) {
+    let msgtype = e.message[0].type;//用户消息类型
+    let Rand//获取消息随机数
+    if(e?.real_id){
+        //logger.info(this.e?.real_id)
+        Rand = e.message_id// 目标rand值
+    }else{
+        Rand = e.rand// 目标rand值
+    }
+    let date = await tool.readFromJsonFile(faceFile)//获取所有表情json
+    let BascialDate = {
+            'user_id': e.user_id,
+            'time': tool.convertTime(Date.now(), 0),
+            'rand': [Rand],
+    }
+    //对iamge类型消息处理
+    if (msgtype == "image") {
+        BascialDate.type = "image"
+        BascialDate.url = e.message[0].url//添加图片链接,腾讯图链似乎一段时间后会过期
+        //image下载至本地
+        let imageFile = `./plugins/San-plugin/resources/face/images/${tool.getId()}.gif`//构造表情图片id
+        await tool.downloadImage(BascialDate.url, imageFile)
+        BascialDate.imageFile = imageFile
+    }
+    //对非iamge类型消息处理
+    if (msgtype !== "image") {
+        BascialDate.type = "other"//非iamge消息存源码
+        BascialDate.msg = e.message//存消息源码
+    }
+
+    //存入表情对象
+    if (date[tag]) {
+        date[tag].list.push(BascialDate)//直接push到tag的子列表
+    }else{
+        date[tag] = {
+            'list': [BascialDate]
         }
+    }
 
+    //存入表情json文件
+    tool.JsonWrite(date, faceFile)
 
-
-        //以下为image类型的消息处理
-        if (msgtype == "image") {
-            const imgNumber = await tool.countFilesInDirectorySync(`./plugins/San-plugin/resources/face/images`)
-            //image下载至本地
-            let imageFile = `./plugins/San-plugin/resources/face/images/${tool.getId()}.gif`
-            let url = e.message[0].url
-            await tool.downloadImage(url, imageFile)
-
-            let date = {}
-            if (fs.existsSync(faceFile)) {
-                date = await tool.readFromJsonFile(faceFile)
-                if (date[tag] == undefined) {
-                    date[`${tag}`] = {
-
-                        'list': [{
-                            'user_id': e.user_id,
-                            'time': tool.convertTime(Date.now(), 0),
-                            'type': e.message[0].type,
-                            'url': e.message[0].url,
-                            'imageFile': imageFile,
-                            'rand': [Rand],
-
-                        },
-                        ]
-                    }
-                    //判断是否存在同名tag,存在则使用初始化方法，不存在则使用push方法
-                } else {
-
-                    date[tag].list.push(
-                        {
-                            'user_id': e.user_id,
-                            'time': tool.convertTime(Date.now(), 0),
-                            'type': e.message[0].type,
-                            'url': e.message[0].url,
-                            'imageFile': imageFile,
-                            'rand': [Rand],
-                        }
-                    )
-
-                }
-            } else {
-                date[`${tag}`] = {
-
-                    'list': [{
-                        'user_id': e.user_id,
-                        'time': tool.convertTime(Date.now(), 0),
-                        'type': e.message[0].type,
-                        'url': e.message[0].url,
-                        'imageFile': imageFile,
-                        'rand': [Rand],
-
-                    },
-                    ]
-                }
-            }//判断是否有userface文件,若无则进行初始化
-
-            tool.JsonWrite(date, faceFile)
-            e.reply(`${tag} 添加成功`)
-        }else{                  //image类型消息处理完毕
-            let date = {}
-            if (fs.existsSync(faceFile)) {
-                date = await tool.readFromJsonFile(faceFile)
-            } else {
-                date[`${tag}`] = {
-
-                    'list': [{
-                        'user_id': e.user_id,
-                        'time': tool.convertTime(Date.now(), 0),
-                        'type': "other",
-                        'msg': e.message,
-                        'rand': [Rand],
-                    },
-                    ]
-                }
-            }//判断是否有userface文件,若无则进行初始化
-            if (date[tag] == undefined) {
-                date[`${tag}`] = {
-
-                    'list': [{
-                        'user_id': e.user_id,
-                        'time': tool.convertTime(Date.now(), 0),
-                        'type': "other",
-                        'msg': e.message,
-                        'rand': [Rand],
-                    },
-                    ]
-                }
-                //判断是否存在同名tag,存在则使用初始化方法，不存在则使用push方法
-            } else {
-
-                date[tag].list.push(
-                    {
-                        'user_id': e.user_id,
-                        'time': tool.convertTime(Date.now(), 0),
-                        'type': "other",
-                        'msg': e.message,
-                        'rand': [Rand],
-                    }
-                )
-
-            }
-            tool.JsonWrite(date, faceFile)
-
-            delete user_tags[e.user_id]; // 清除用户的tag
-            e.reply(`${tag} 添加成功`)
-        }                           
+    e.reply(`- ${tag} -添加成功`)
 
 }
