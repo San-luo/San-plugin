@@ -1,4 +1,5 @@
 import common from '../../../lib/common/common.js';
+import * as tool from '../models/tool.js';
 const cfg_priority = await tool.set_priority("get_e")
 export class gete extends plugin {
     constructor() {
