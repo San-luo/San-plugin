@@ -68,8 +68,11 @@ export class San_Poke extends plugin {
         let random = Math.floor(Math.random() * randomlist.length)
         let url = randomlist[random]
         if(!(await tool.checkApi(url))){
-            e.reply("连接api服务器失败",{recallMsg : 4});
-            return fasle
+            let msg = await e.reply("连接api服务器失败");
+            setTimeout(() => {
+                e.group.recallMsg(msg.seq,msg.rand)
+            }, 4000);
+            return false
         }
         e.reply(segment.image(url));
         
@@ -91,9 +94,7 @@ async function isPokeOpen() {
 async function isPokeOnlyOpen() {
 
     let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
-
-    const TorF = Cfg.add_onlyBot
-
+    const TorF = Cfg.poke_onlyBot
     if (TorF) {
         return true
     }else{
