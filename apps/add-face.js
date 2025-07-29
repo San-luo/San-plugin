@@ -6,7 +6,7 @@ let user_tags = {}//用作中转变量
 let laidianNub = 10 //来点表情 的发送表情数量(聊天记录形式)
 const maxAttempts = 10 //最大尝试重新发送次数
 
-let faceFile = "./plugins/San-plugin/resources/face/userface.json"
+let faceFile = "./data/San/face/userface.json"
 export class San_AddFace extends plugin {
     constructor() {
         super({
@@ -506,7 +506,7 @@ async function HandelFace(e,tag) {
         BascialDate.type = "image"
         BascialDate.url = e.message[0].url//添加图片链接,腾讯图链似乎一段时间后会过期
         //image下载至本地
-        let imageFile = `./plugins/San-plugin/resources/face/images/${tool.getId()}.gif`//构造表情图片id
+        let imageFile = `./data/San/face/images/${tool.getId()}.gif`//构造表情图片id
         await tool.downloadImage(BascialDate.url, imageFile)
         BascialDate.imageFile = imageFile
     }

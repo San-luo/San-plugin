@@ -5,156 +5,248 @@ import common from '../../lib/common/common.js';
 import path from 'path';
 import { faceIndex } from './models/index/FaceIndex.js'
 
-logger.info('-------------------------')
-logger.info('San-plugin加载中....')
-logger.info('-------------------------')
-//检测路径是否是否创建
-let FolderPath = [
-  `./plugins/San-plugin/resources/poke/img`,
-  `./plugins/San-plugin/resources/poke/api.yaml`,
-  `./plugins/San-plugin/resources/face/userface.json`,
-  `./plugins/San-plugin/resources/face/images`
-]
-for(let i of FolderPath){
-  tool.checkPath(i)
-}
+// 初始化日志
+logger.info('-------------------------');
+logger.info('San-plugin加载中....');
+logger.info('-------------------------');
 
-//检查依赖环境是否正常
-checkDependencies();
-
-//更新face版本结构
-//await faceIndex()
-
-//设置配置文件
-await setConfig('./plugins/San-plugin/config/default_config','./plugins/San-plugin/config')
-await setConfig('./plugins/San-plugin/resources/AI/config/default_config','./plugins/San-plugin/resources/AI/config')
-
-
-//加载插件
-const files = await fsS.readdirSync('./plugins/San-plugin/apps').filter(file => file.endsWith('.js'))
-let ret = []
-files.forEach((file) => {
-  ret.push(import(`./apps/${file}`))
-})
-ret = await Promise.allSettled(ret)
-let apps = {}
-for (let i in files) {
-  let name = files[i].replace('.js', '')
-  if (ret[i].status != 'fulfilled') {
-      logger.error(`载入插件错误：${logger.red(name)}`)
-      logger.error(ret[i].reason)
-      continue
+// 路径配置
+const config = {
+  new: {
+    faceDir: './data/San/face',
+    get userFace() { return path.join(this.faceDir, 'userface.json'); },
+    get imagesDir() { return path.join(this.faceDir, 'images'); }
+  },
+  old: {
+    faceDir: './plugins/San-plugin/resources/face',
+    get userFace() { return path.join(this.faceDir, 'userface.json'); },
+    get imagesDir() { return path.join(this.faceDir, 'images'); }
   }
-  apps[name] = ret[i].value[Object.keys(ret[i].value)[0]]
-}
+};
 
+// 确保目录存在
+const ensureDir = (dir) => {
+  if (!fsS.existsSync(dir)) {
+    fsS.mkdirSync(dir, { recursive: true });
+    logger.info(`创建目录: ${dir}`);
+  }
+};
 
-export { apps }
+// 递归删除目录
+const deleteFolderRecursive = (dirPath) => {
+  if (fsS.existsSync(dirPath)) {
+    fsS.readdirSync(dirPath).forEach(file => {
+      const curPath = path.join(dirPath, file);
+      if (fsS.lstatSync(curPath).isDirectory()) {
+        deleteFolderRecursive(curPath);
+      } else {
+        fsS.unlinkSync(curPath);
+      }
+    });
+    fsS.rmdirSync(dirPath);
+    logger.info(`已删除目录: ${dirPath}`);
+  }
+};
 
-
-
-/**
- * 异步函数：检查插件的依赖项是否安装
- * 该函数通过读取package.json文件中的dependencies属性来获取依赖项列表，
- * 并尝试一一导入这些依赖项，以确保它们已经安装
- */
-async function checkDependencies() {
-  // 读取package.json文件中的内容，包括依赖项
-  let packagejson = await tool.readFromJsonFile('./plugins/San-plugin/package.json')
-  const dependencyList = Object.keys(packagejson.dependencies) 
-  // 遍历依赖项列表
-  for (let i of dependencyList) {
-    try {
-      // 尝试动态导入依赖项，以验证其是否存在
-      await import(`${i}`);
-      //logger.info(`San-plugin:依赖 ${i} 加载成功`);
-    } catch (error) {
-      logger.warn('-------San插件依赖缺失-----------');
-      logger.warn(`请运行:pnpm install --filter=san-plugin`);
-      let msg = `San-plugin依赖缺失,请运行:\npnpm install --filter=san-plugin`;
-      await common.relpyPrivate(tool.masterQQ(), msg);
-      logger.warn(`----------------------------`);
+// 更新JSON文件中的图片路径
+const updateImagePaths = async () => {
+  try {
+    if (!fsS.existsSync(config.new.userFace)) {
+      logger.warn('未找到新路径下的userface.json');
       return;
     }
-  }
-}
 
+    const faceData = await tool.readFromJsonFile(config.new.userFace);
+    let updateCount = 0;
 
-/**
- * 异步设置配置文件函数
- * 该函数旨在确保当前配置目录下的配置文件与默认配置目录下的一致
- * 如果当前配置中缺少默认配置中的项，则会自动补充
- * 
- * @param {string} dfConfigDir 默认配置目录路径
- * @param {string} configDir 当前配置目录路径
- */
-async function setConfig(dfConfigDir, configDir) {
-  try {
-    // 获取默认配置文件和当前配置文件列表
-    const df_Cfg = new Set((await fs.readdir(dfConfigDir)).filter(file => file.endsWith('.yaml')));
-    const Cfg = new Set((await fs.readdir(configDir)).filter(file => file.endsWith('.yaml')));
-
-    // 获取未载入的配置文件
-    const unload = [...df_Cfg].filter(x => !Cfg.has(x));
-
-    // 如果有未载入的配置文件，将其从默认配置目录复制到当前配置目录
-    if (unload.length !== 0) {
-      for (let file of unload) {
-        const src = path.join(dfConfigDir, file);
-        const dest = path.join(configDir, file);
-
-        try {
-          await fs.copyFile(src, dest);
-          logger.info(`San-plugin:成功复制配置文件:${file}`);
-        } catch (err) {
-          logger.error(`San-plugin:配置文件复制过程中发生错误:${err.message}`);
-        }
-      }
-    }
-
-    // 对比已载入的配置文件并更新缺失的键
-    for (let file of Cfg) {
-      const defaultConfigPath = path.join(dfConfigDir, file);
-      const currentConfigPath = path.join(configDir, file);
-
-      // 读取默认配置文件和当前配置文件内容
-      let defaultConfig, currentConfig;
-
-      try {
-        defaultConfig = await tool.readyaml(defaultConfigPath);
-        currentConfig = await tool.readyaml(currentConfigPath);
-      } catch (error) {
-        logger.warn(`San-plugin:读取配置文件 ${file} 时发生错误，使用默认配置`);//即视为二者无差异,不进行更改
-        defaultConfig = {};
-        currentConfig = {};
-      }
-
-      let hasChanged = false
-      // 合并默认配置中的键到当前配置中（如果当前配置中没有）
-      Object.keys(defaultConfig).forEach(key => {
-        if (!(key in currentConfig)) {
-          //currentConfig[key] = defaultConfig[key];
-          hasChanged = true
-          logger.info(`San-plugin:更新配置文件 ${file}`);
+    Object.keys(faceData).forEach(tag => {
+      faceData[tag].list.forEach(item => {
+        if (item.imageFile) {
+          // 标准化路径比较
+          const normalizedPath = path.normalize(item.imageFile);
+          const oldPathPrefix = path.normalize(config.old.imagesDir);
+          
+          if (normalizedPath.includes(oldPathPrefix)) {
+            const relativePath = path.relative(config.old.faceDir, normalizedPath);
+            item.imageFile = path.join(config.new.faceDir, relativePath);
+            updateCount++;
+          }
         }
       });
-      //以默认cfg为模板(如注释)
-        for(let key in currentConfig){
-          defaultConfig[key] = currentConfig[key]
+    });
+
+    if (updateCount > 0) {
+      await tool.JsonWrite(faceData, config.new.userFace);
+      logger.info(`已更新 ${updateCount} 个表情文件的路径引用`);
+    } else {
+      logger.info('未检测到需要更新的路径引用');
+    }
+  } catch (error) {
+    logger.error('更新图片路径时出错:', error);
+  }
+};
+
+// 迁移旧表情数据
+const migrateOldFiles = async () => {
+  if (!fsS.existsSync(config.old.faceDir)) {
+    logger.info('未检测到旧版表情数据');
+    return;
+  }
+
+  logger.info('开始迁移旧版表情数据...');
+
+  try {
+    // 1. 迁移userface.json
+    if (fsS.existsSync(config.old.userFace)) {
+      const oldData = await tool.readFromJsonFile(config.old.userFace);
+      
+      // 合并新旧数据（新数据优先）
+      let finalData = oldData;
+      if (fsS.existsSync(config.new.userFace)) {
+        const newData = await tool.readFromJsonFile(config.new.userFace);
+        finalData = { ...oldData, ...newData };
+      }
+      
+      await tool.JsonWrite(finalData, config.new.userFace);
+      fsS.renameSync(config.old.userFace, config.old.userFace + '.bak');
+      logger.info('userface.json 迁移完成');
+    }
+
+    // 2. 迁移图片文件
+    if (fsS.existsSync(config.old.imagesDir)) {
+      const files = fsS.readdirSync(config.old.imagesDir);
+      let migratedCount = 0;
+      
+      for (const file of files) {
+        const oldPath = path.join(config.old.imagesDir, file);
+        const newPath = path.join(config.new.imagesDir, file);
+        
+        if (!fsS.existsSync(newPath)) {
+          await fs.rename(oldPath, newPath);
+          migratedCount++;
         }
+      }
+      
+      logger.info(`已迁移 ${migratedCount}/${files.length} 个表情图片`);
+    }
 
+    // 3. 清理旧目录
+    try {
+      deleteFolderRecursive(config.old.faceDir);
+    } catch (error) {
+      logger.warn(`清理旧目录失败: ${error.message}`);
+    }
 
+    // 4. 更新路径引用
+    await updateImagePaths();
 
-      // 保存更新后的配置文件
+    logger.info('表情数据迁移和更新完成');
+  } catch (error) {
+    logger.error('迁移过程中出错:', error);
+  }
+};
+
+// 初始化文件系统
+const initFileSystem = async () => {
+  try {
+    // 确保新目录结构
+    ensureDir(config.new.faceDir);
+    ensureDir(config.new.imagesDir);
+    
+    // 执行迁移
+    await migrateOldFiles();
+  } catch (error) {
+    logger.error('文件系统初始化失败:', error);
+  }
+};
+
+// 检查依赖
+const checkDependencies = async () => {
+  try {
+    const packagejson = await tool.readFromJsonFile('./plugins/San-plugin/package.json');
+    const dependencyList = Object.keys(packagejson.dependencies);
+    
+    for (const dep of dependencyList) {
       try {
-        if(hasChanged){
-          await tool.objectToYamlFile(defaultConfig, currentConfigPath);
-        }
+        await import(dep);
       } catch (error) {
-        logger.error(`San-plugin:保存配置文件 ${file} 时发生错误:${error.message}`);
+        logger.error('-------San插件依赖缺失-----------');
+        logger.error(`请运行: pnpm install --filter=san-plugin`);
+        await common.relpyPrivate(tool.masterQQ(), 
+          'San-plugin依赖缺失,请运行:\npnpm install --filter=san-plugin');
+        throw error;
       }
     }
   } catch (error) {
-    logger.error(`San-plugin:发生了错误:${error.message}`);
+    logger.error('依赖检查失败:', error);
+    throw error;
   }
-}
+};
+
+// 设置配置文件
+const setConfig = async (dfConfigDir, configDir) => {
+  try {
+    const dfFiles = new Set((await fs.readdir(dfConfigDir)).filter(f => f.endsWith('.yaml')));
+    const cfgFiles = new Set((await fs.readdir(configDir)).filter(f => f.endsWith('.yaml')));
+    const toCopy = [...dfFiles].filter(f => !cfgFiles.has(f));
+
+    // 复制缺失的配置文件
+    for (const file of toCopy) {
+      const src = path.join(dfConfigDir, file);
+      const dest = path.join(configDir, file);
+      await fs.copyFile(src, dest);
+      logger.info(`已复制配置文件: ${file}`);
+    }
+
+    // 更新现有配置
+    for (const file of cfgFiles) {
+      const defaultCfg = await tool.readyaml(path.join(dfConfigDir, file));
+      const currentCfg = await tool.readyaml(path.join(configDir, file));
+      
+      // 合并配置（默认配置为模板）
+      const merged = { ...defaultCfg, ...currentCfg };
+      await tool.objectToYamlFile(merged, path.join(configDir, file));
+    }
+  } catch (error) {
+    logger.error('配置文件处理失败:', error);
+  }
+};
+
+// 主初始化流程
+const initialize = async () => {
+  try {
+    // 1. 初始化文件系统
+    await initFileSystem();
+    
+    // 2. 检查依赖
+    await checkDependencies();
+    
+    // 3. 设置配置文件
+    await setConfig('./plugins/San-plugin/config/default_config', './plugins/San-plugin/config');
+    await setConfig('./plugins/San-plugin/resources/AI/config/default_config', './plugins/San-plugin/resources/AI/config');
+    
+    // 4. 加载插件
+    const pluginFiles = fsS.readdirSync('./plugins/San-plugin/apps')
+      .filter(f => f.endsWith('.js'));
+    
+    const plugins = {};
+    for (const file of pluginFiles) {
+      try {
+        const module = await import(`./apps/${file}`);
+        const name = file.replace('.js', '');
+        plugins[name] = module[Object.keys(module)[0]];
+      } catch (error) {
+        logger.error(`加载插件 ${file} 失败:`, error);
+      }
+    }
+    
+    return plugins;
+  } catch (error) {
+    logger.error('San-plugin初始化失败:', error);
+    return {};
+  }
+};
+
+// 执行初始化并导出
+const apps = await initialize();
+export { apps };
