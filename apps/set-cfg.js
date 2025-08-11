@@ -56,6 +56,9 @@ export class San_SetCfg extends plugin {
                     break;
                 case `优先级取`:
                     Cfg_priority.get_e = ChangeNumber ;
+                    break;
+                case `优先级日报`:
+                    Cfg_priority.daily_paper = ChangeNumber ;
                     break;//----------------------------
                 case `去背景优先级`:
                     Cfg_priority.removeBackground = ChangeNumber ;
@@ -71,6 +74,9 @@ export class San_SetCfg extends plugin {
                     break;
                 case `取优先级`:
                     Cfg_priority.get_e = ChangeNumber ;
+                    break;
+                case `日报优先级`:
+                    Cfg_priority.daily_paper = ChangeNumber ;
                     break;
                 default:
                     //e.reply("指令未匹配") ;
@@ -124,26 +130,6 @@ export class San_SetCfg extends plugin {
                     break;
             }
 
-            switch (NumberMatch[2]) {
-                case `图像质量`:
-                    Cfg_config.imgQuality = ChangeNumber ;
-                    break;
-                case `优先级天气`:
-                    Cfg_priority.weather = ChangeNumber ;
-                    break;
-                case `优先级去背景`:
-                    Cfg_priority.removeBackground = ChangeNumber ;
-                    break;
-                case `优先级留言`:
-                    Cfg_priority.LeaveMessages = ChangeNumber ;
-                    break;   
-                case `优先级戳一戳`:
-                    Cfg_priority.GroupPoke = ChangeNumber ;
-                    break;                                 
-                default:
-                    //e.reply("指令未匹配") ;
-                    break;
-            }
 
             const update_config = yaml.dump(Cfg_config);
             const update_priority = yaml.dump(Cfg_priority);
@@ -177,6 +163,7 @@ export class San_SetCfg extends plugin {
                 `留言：${Cfg_priority.LeaveMessages}`,
                 `戳一戳：${Cfg_priority.GroupPoke}`,
                 `取：${Cfg_priority.get_e}`,
+                `日报: ${Cfg_priority.daily_paper}`
             ]
             const PriorityMsg = await common.makeForwardMsg(e, PriorityInfo, '优先级信息')
             sendMsg.push(PriorityMsg)
