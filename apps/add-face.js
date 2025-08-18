@@ -259,7 +259,7 @@ export class San_AddFace extends plugin {
             }
             let targetRand
             if(source.real_id){
-                targetRand = source.real_id// 目标rand值
+                targetRand = source.message_id// 目标rand值
             }else if(source.rand){
                 targetRand = source.rand// 目标rand值
 
