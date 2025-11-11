@@ -3,12 +3,13 @@ const fs = fsS.promises;
 import * as tool from './models/tool.js';
 import common from '../../lib/common/common.js';
 import path from 'path';
-import { faceIndex } from './models/index/FaceIndex.js'
 
 // 初始化日志
 logger.info('-------------------------');
 logger.info('San-plugin加载中....');
 logger.info('-------------------------');
+
+//___迁移face文件位置(./plugins/San-plugin/resources/face -> ./data/San/face)___
 
 // 路径配置
 const config = {
@@ -28,7 +29,7 @@ const config = {
 const ensureDir = (dir) => {
   if (!fsS.existsSync(dir)) {
     fsS.mkdirSync(dir, { recursive: true });
-    logger.info(`创建目录: ${dir}`);
+    logger.info(`San-plugin:创建目录: ${dir}`);
   }
 };
 
@@ -37,10 +38,10 @@ const initUserFaceFile = async () => {
   try {
     if (!fsS.existsSync(config.new.userFace)) {
       await tool.JsonWrite({}, config.new.userFace);
-      logger.info(`已创建初始 userface.json 文件: ${config.new.userFace}`);
+      logger.info(`San-plugin:已创建初始 userface.json 文件: ${config.new.userFace}`);
     }
   } catch (error) {
-    logger.error('初始化userface.json失败:', error);
+    logger.error('San-plugin:初始化userface.json失败:', error);
     throw error;
   }
 };
@@ -57,7 +58,7 @@ const deleteFolderRecursive = (dirPath) => {
       }
     });
     fsS.rmdirSync(dirPath);
-    logger.info(`已删除目录: ${dirPath}`);
+    logger.info(`San-plugin:已删除目录: ${dirPath}`);
   }
 };
 
@@ -65,7 +66,7 @@ const deleteFolderRecursive = (dirPath) => {
 const updateImagePaths = async () => {
   try {
     if (!fsS.existsSync(config.new.userFace)) {
-      logger.warn('未找到新路径下的userface.json');
+      logger.warn('San-plugin:未找到新路径下的userface.json');
       return;
     }
 
@@ -90,23 +91,23 @@ const updateImagePaths = async () => {
 
     if (updateCount > 0) {
       await tool.JsonWrite(faceData, config.new.userFace);
-      logger.info(`已更新 ${updateCount} 个表情文件的路径引用`);
+      logger.info(`San-plugin:已更新 ${updateCount} 个表情文件的路径引用`);
     } else {
-      logger.info('未检测到需要更新的路径引用');
+      logger.info('San-plugin:未检测到需要更新的路径引用');
     }
   } catch (error) {
-    logger.error('更新图片路径时出错:', error);
+    logger.error('San-plugin:更新图片路径时出错:', error);
   }
 };
 
 // 迁移旧表情数据
 const migrateOldFiles = async () => {
   if (!fsS.existsSync(config.old.faceDir)) {
-    logger.info('未检测到旧版表情数据');
+    logger.info('San-plugin:未检测到旧版表情数据');
     return;
   }
 
-  logger.info('开始迁移旧版表情数据...');
+  logger.info('San-plugin:开始迁移旧版表情数据...');
 
   try {
     // 1. 迁移userface.json
@@ -122,7 +123,7 @@ const migrateOldFiles = async () => {
       
       await tool.JsonWrite(finalData, config.new.userFace);
       fsS.renameSync(config.old.userFace, config.old.userFace + '.bak');
-      logger.info('userface.json 迁移完成');
+      logger.info('San-plugin:userface.json 迁移完成');
     }
 
     // 2. 迁移图片文件
@@ -140,22 +141,22 @@ const migrateOldFiles = async () => {
         }
       }
       
-      logger.info(`已迁移 ${migratedCount}/${files.length} 个表情图片`);
+      logger.info(`San-plugin:已迁移 ${migratedCount}/${files.length} 个表情图片`);
     }
 
     // 3. 清理旧目录
     try {
       deleteFolderRecursive(config.old.faceDir);
     } catch (error) {
-      logger.warn(`清理旧目录失败: ${error.message}`);
+      logger.warn('San-plugin:清理旧目录失败:', error.message);
     }
 
     // 4. 更新路径引用
     await updateImagePaths();
 
-    logger.info('表情数据迁移和更新完成');
+    logger.info('San-plugin:表情数据迁移和更新完成');
   } catch (error) {
-    logger.error('迁移过程中出错:', error);
+    logger.error('San-plugin:迁移过程中出错:', error);
   }
 };
 
@@ -172,7 +173,7 @@ const initFileSystem = async () => {
     // 执行迁移
     await migrateOldFiles();
   } catch (error) {
-    logger.error('文件系统初始化失败:', error);
+    logger.error('San-plugin:文件系统初始化失败:', error);
   }
 };
 
@@ -194,7 +195,7 @@ const checkDependencies = async () => {
       }
     }
   } catch (error) {
-    logger.error('依赖检查失败:', error);
+    logger.error('San-plugin:依赖检查失败:', error);
     throw error;
   }
 };
@@ -211,7 +212,7 @@ const setConfig = async (dfConfigDir, configDir) => {
       const src = path.join(dfConfigDir, file);
       const dest = path.join(configDir, file);
       await fs.copyFile(src, dest);
-      logger.info(`已复制配置文件: ${file}`);
+      logger.info('San-plugin:已复制配置文件:', file);
     }
 
     // 更新现有配置
@@ -224,7 +225,7 @@ const setConfig = async (dfConfigDir, configDir) => {
       await tool.objectToYamlFile(merged, path.join(configDir, file));
     }
   } catch (error) {
-    logger.error('配置文件处理失败:', error);
+    logger.error('San-plugin:配置文件处理失败:', error);
   }
 };
 
@@ -252,7 +253,7 @@ const initialize = async () => {
         const name = file.replace('.js', '');
         plugins[name] = module[Object.keys(module)[0]];
       } catch (error) {
-        logger.error(`加载插件 ${file} 失败:`, error);
+        logger.error('San-plugin:加载插件', file, '失败:', error);
       }
     }
     

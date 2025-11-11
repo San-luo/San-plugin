@@ -36,6 +36,11 @@ export class San_AddFace extends plugin {
                     reg: '^#?(散|san|San)?来点(.*)$',
                     fnc: 'laidian'
                 },
+                {
+                    reg: '^(.*)$',
+                    fnc: 'facereply',
+                    log: false,
+                },
             ]
         })
 
@@ -363,45 +368,12 @@ export class San_AddFace extends plugin {
         }
     }
 
-
-}
-
-//监听模式,废弃
-// Bot.on?.("message", async(e) => {
-    
-// })
-
-
-//****以下为相关方法****\\
-//返回表情添加的状态
-async function isAddOpen() {
-    let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
-    const TorF = Cfg.add_face
-    if (TorF) {
-        return true
-    }else{
-        return false
-    }
-}
-
-//返回表情添加仅主人的状态
-async function isAddOnlyOpen() {
-    let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
-    const TorF = Cfg.add_onlyMaster
-
-    if (TorF) {
-        return true
-    }else{
-        return false
-    }
-}
-
-export async function facereply(e){
+    async facereply(e){
         if (!fs.existsSync(faceFile)) {
-            return
+            return false
         }
         if (!isAddOpen()) {
-            return
+            return false
         }
         let msg = e.msg
         const obj = await tool.readFromJsonFile(faceFile)
@@ -414,16 +386,17 @@ export async function facereply(e){
             //兼容#开头字段 补充判断
             let reg = /^#(.*)$/;
             //logger.info(msg)
-            if (!msg) { return } //排除非字符串消息
+            if (!msg) { return false } //排除非字符串消息
             let match = msg.match(reg)
-            if (!match) { return }
+            if (!match) { return false }
             if (keys.includes(match[1])) {
                 msg = match[1]
                 logger.info(`San-plugin表情回复 匹配到 ${msg}`)
  
             }else{
-                return
+                return false
             }
+            return false
         }
         //const randomIndex = Math.floor(Math.random() * obj[msg].list.length);
         // 重复进行两次随机操作，直到两次随机结果相同
@@ -476,7 +449,41 @@ export async function facereply(e){
             face["rand"] = [Rand]           
         }
         tool.JsonWrite(obj, faceFile)
+        return false
 }
+}
+
+//监听模式,废弃
+// Bot.on?.("message", async(e) => {
+    
+// })
+
+
+//****以下为相关方法****\\
+//返回表情添加的状态
+async function isAddOpen() {
+    let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
+    const TorF = Cfg.add_face
+    if (TorF) {
+        return true
+    }else{
+        return false
+    }
+}
+
+//返回表情添加仅主人的状态
+async function isAddOnlyOpen() {
+    let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
+    const TorF = Cfg.add_onlyMaster
+
+    if (TorF) {
+        return true
+    }else{
+        return false
+    }
+}
+
+
 
 
 
