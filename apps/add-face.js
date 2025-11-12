@@ -17,7 +17,7 @@ export class San_AddFace extends plugin {
             priority: '-100', //优先级
             rule: [
                 {
-                    reg: '^#(批量|连续|多个|持续)?添加.*$',
+                    reg: '^#(全局)?(批量|连续|多个|持续)?添加.*$',
                     fnc: 'add'
                     // 执行方法
                 },
@@ -77,7 +77,7 @@ export class San_AddFace extends plugin {
             }
 
             //添加表情
-            await HandelFace(this.e,tag)
+            await HandelFace(this.e,tag,user_tags[this.e.user_id]["isglobal"])
             
             //判断是否结束
             if(!iscontinous){
@@ -105,12 +105,13 @@ export class San_AddFace extends plugin {
         }
         
         let msg = e.msg
-        let reg = /^#(批量|连续|多个|持续)?添加\s*(.*)$/;// ^#(批量|连续|多个|持续)?添加.*$
+        let reg = /^#(全局)?(批量|连续|多个|持续)?添加\s*(.*)$/;// ^#(批量|连续|多个|持续)?添加.*$
 
         let match = msg.match(reg)
-        let iscontinous = match[1] ? true : false
+        let iscontinous = match[2] ? true : false
+        let isglobal = match[1] ? true : false
         //logger.info(match)
-        if (match[2] == '') {
+        if (match[3] == '') {
             e.reply("tag禁止为空!")
             return
         }
@@ -119,14 +120,15 @@ export class San_AddFace extends plugin {
         if (!user_tags[e.user_id]) {
             user_tags[e.user_id] = {};
         }
-        user_tags[e.user_id]["tag"] = match[2] //获取到添加tag
+        user_tags[e.user_id]["tag"] = match[3] //获取到添加tag
         user_tags[e.user_id]["iscontinous"] = iscontinous //获取到添加类型
-
+        user_tags[e.user_id]["isglobal"] = isglobal //获取到是否全局
+        
         if(await tool.getsource(e)){//如果存在引用消息
             //logger.info(await tool.getsource(e))
             let source = await tool.getsource(e)
             source.reply=e.reply
-            await HandelFace(source,match[2])
+            await HandelFace(source,match[3])
         }else{
         /** 设置上下文，后续接收到内容会执行hei方法 */
         this.setContext('addnext');   
@@ -576,7 +578,7 @@ async function isFaceGroupApart() {
  * @param {Object} e - 用户消息对象,请传this.e
  * @param {string} tag - 表情的tag标签
  */
-async function HandelFace(e,tag) {
+async function HandelFace(e,tag,isglobal) {
     let msgtype = e.message[0].type;//用户消息类型
     let Rand//获取消息随机数
     if(e?.real_id){
@@ -589,7 +591,7 @@ async function HandelFace(e,tag) {
     let BascialDate = {
             'user_id': e.user_id,
             'time': tool.convertTime(Date.now(), 0),
-            'belong': (e.isGroup) ? [e.group_id] : [],//判断是否为群组消息
+            'belong': (e.isGroup && !isglobal) ? [e.group_id] : [],//判断是否为群组消息
             'rand': [Rand],
     }
 
