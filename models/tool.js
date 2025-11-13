@@ -2,6 +2,7 @@ import yaml from 'js-yaml';
 import fsS from 'fs';
 const fs = fsS.promises;
 import path from 'path';
+import lodash from "lodash"
 import puppeteer from 'puppeteer';
 import axios from 'axios';
 import common from '../../../lib/common/common.js';
@@ -554,5 +555,65 @@ export function getText(e) {
       }
     }
   }
+  if(e.isGroup){
+    const groupCfg = config.getGroup(e.self_id, e.group_id)
+    let alias = groupCfg.botAlias
+    alias.push(`{at:${e.self_id}}`)
+    if (!Array.isArray(alias)) alias = [alias]
+
+    for (const name of alias) if (text.startsWith(name)) text = lodash.trimStart(text, name).trim()
+    return text
+  }
   return text
+}
+
+
+export async function getFMsg(e){
+  // NC协议 
+  if (e.message[0].type == "forward") {
+    let data = []
+    let msg_data = (await e.friend.getChatHistory(e.message_seq, 1)).pop()
+    logger.info(msg_data.message)
+    for(let item of msg_data.message[0]['content']){
+        for(let i of item.message){
+          if(i.type == "image"){
+            let imageFile = `./data/San/face/images/${getId()}.gif`//构造表情图片id
+            await downloadImage(i.data.url, imageFile)
+            i.data.file = imageFile
+          }
+        }
+        data.push({
+        'message': item.message,
+        'nickname': item.sender.nickname,
+        'user_id': item.sender.user_id,
+        'time': item.time
+        })
+    }
+    return data
+  }
+  // IC协议
+  if(e.message[0].type == "json"){
+    let data = []
+    const innerData = JSON.parse(e.message[0].data);
+    const resid = innerData.meta.detail.resid;
+
+    let msg = e.isGroup ? await e.group.getForwardMsg(resid) : await e.friend.getForwardMsg(resid)
+    for(let item of msg){
+      for(let i of item.message){
+        if(i.type == "image"){
+          let imageFile = `./data/San/face/images/${getId()}.gif`//构造表情图片id
+          await downloadImage(i.url, imageFile)
+          i.file = imageFile
+        }
+      }
+      data.push({
+        'message': item.message,
+        'nickname': item.nickname,
+        'user_id': item.user_id,
+        'time': item.time
+      })
+    }
+    return data
+  }
+  return false
 }

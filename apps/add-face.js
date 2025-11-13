@@ -462,6 +462,12 @@ export class San_AddFace extends plugin {
             sendmsg = await e.reply(face.msg)
         }//other消息处理完毕  
 
+        //以下为forward消息的处理
+        if (matchType == "forward") {
+            let Msg = e.isGroup ? await e.group.makeForwardMsg(face.msg) : await e.friend.makeForwardMsg(face.msg)
+            sendmsg = await e.reply(Msg)
+        }//forward消息处理完毕  
+
         //以下下为text消息的处理
         if (matchType == "text") {
             sendmsg = await e.reply(obj[msg].list[randomIndex].content)
@@ -609,30 +615,34 @@ async function HandelFace(e,tag,isglobal) {
         BascialDate.imageFile = imageFile
     }
     //对forward类型消息处理
-    if (msgtype == "forward") {
+    if (msgtype == "forward" || msgtype == "json") {
         //let forwardMsg = []
         //let data = common.makeForwardMsg(e, e.message[0]['content'], `聊天记录`);
-        let data = []
-        for(let item of e.message[0]['content']){
-            data.push({
-            'message': item.message,
-            'nickname': item.sender.nickname,
-            'user_id': item.sender.user_id,
-            'time': item.time
-            })
-        }
-        let forwardMsg = {
-            type: 'node',
-            data: data
-        }
-        BascialDate.type = "other"//非iamge消息存源码
-        BascialDate.msg = forwardMsg//存消息源码
+        let data = await tool.getFMsg(e)
+        BascialDate.type = "forward"//非iamge消息存源码
+        BascialDate.msg = data//存消息数组 未进行制作合并转发
     }
     //对非iamge类型消息处理
-    if (msgtype !== "image" && msgtype !== "forward") {
+    if (msgtype !== "image" && msgtype !== "forward" && msgtype !== "json") {
         BascialDate.type = "other"//非iamge消息存源码
         BascialDate.msg = e.message//存消息源码
     }
+
+    // if (msgtype == "json") {
+
+    //     const innerData = JSON.parse(e.message[0].data);
+    //     const resid = innerData.meta.detail.resid;
+    //     let data = await e.friend.getForwardMsg(resid)
+    //     logger.info(data)
+    //     //let dataBuffer = await e.group._newDownloadMultiMsg(resid,2)
+    //     // let data = Bot.icqq.core.pb.decode(dataBuffer).toJSON()
+    //     // logger.info(JSON.stringify(data, null, 2))
+    //     //logger.info(dataBuffer.toString("hex"))
+    //     logger.info("-----------------------------------")
+    //     //logger.info(dataBuffer)
+    // }
+ 
+
 
     //存入表情对象
     if (date[tag]) {
