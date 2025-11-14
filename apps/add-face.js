@@ -633,6 +633,13 @@ async function HandelFace(e,tag,isglobal) {
     }
     //对非iamge类型消息处理
     if (msgtype !== "image" && msgtype !== "forward" && msgtype !== "json") {
+        for(let i of e.message){
+            if(i.type == "image"){
+            let imageFile = `./data/San/face/images/${tool.getId()}.gif`//构造表情图片id
+            await tool.downloadImage(i.url, imageFile)
+            i.file = imageFile
+            }
+        }
         BascialDate.type = "other"//非iamge消息存源码
         BascialDate.msg = e.message//存消息源码
     }
