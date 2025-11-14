@@ -105,7 +105,7 @@ export class San_AddFace extends plugin {
         }
         
         let msg = await tool.getText(e)
-        let reg = /^\s+?#(全局)?(批量|连续|多个|持续)?添加\s*(.*)$/;// ^#(批量|连续|多个|持续)?添加.*$
+        let reg = /^\s*#(全局)?(批量|连续|多个|持续)?添加\s*(.*)$/;// ^#(批量|连续|多个|持续)?添加.*$
 
         let match = msg.match(reg)
         let iscontinous = match[2] ? true : false
@@ -146,7 +146,7 @@ export class San_AddFace extends plugin {
             return false
         }
 
-        let reg = /^\s+?#?(散|san|San)设置表情添加(开启|关闭)$/
+        let reg = /^\s*#?(散|san|San)设置表情添加(开启|关闭)$/
         let str = await tool.getText(e)
         const match = str.match(reg)
         //logger.info(match)
@@ -208,7 +208,7 @@ export class San_AddFace extends plugin {
 
     async deleteface(e){
         
-        let reg = /^\s+?#?(散|san|San)?表情(删除|删去|去除)(全部项(.*?))?$/
+        let reg = /^\s*?#?(散|san|San)?表情(删除|删去|去除)(全部项(.*?))?$/
         const str = await tool.getText(e)
         const match = str.match(reg)
         //logger.info(match)
@@ -332,7 +332,7 @@ export class San_AddFace extends plugin {
         let atteptCount = 0
         while(atteptCount < maxAttempts && res === 'failed'){
             const msg = await tool.getText(e)
-            const reg = /^\s+?#?(散|san|San)?来点(.*)$/
+            const reg = /^\s*?#?(散|san|San)?来点(.*)$/
             let match = msg.match(reg)
             if(match[2] == ""){
                 e.reply("表情名称为空!")
@@ -401,7 +401,7 @@ export class San_AddFace extends plugin {
             //logger.info(msgtype)
         } else {
             //兼容#开头字段 补充判断
-            let reg = /^\s+?#(.*)$/;
+            let reg = /^\s*?#(.*)$/;
             //logger.info(msg)
             if (!msg) { return false } //排除非字符串消息
             let match = msg.match(reg)
