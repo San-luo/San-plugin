@@ -385,10 +385,8 @@ export class San_AddFace extends plugin {
     }
     //表情触发并回复
     async facereply(e){
-        if (!fs.existsSync(faceFile)) {
-            return false
-        }
-        if (!isAddOpen()) {
+        //判断目录 功能是否开启
+        if (!fs.existsSync(faceFile) || !isAddOpen()) {
             return false
         }
 
@@ -419,7 +417,6 @@ export class San_AddFace extends plugin {
             if(e.isGroup){
                 //判断是否为群组分离状态
                     //返回符合条件的表情
-                    //faceArr = obj[msg].list.filter(i => i.belong.includes(e.group_id) || i.belong.length == 0 || !(i?.belong))
                     let i = -1
                     for(let item of obj[msg][`list`]){
                         i++
@@ -429,20 +426,22 @@ export class San_AddFace extends plugin {
                     }
             }else{
                 //私聊情况下
-                for(let item of obj[msg][`list`]){
-                    let i = -1
-                    i++
-                    indexArr.push(i)
-                }
+
                 //权限判断
                 if (!(await tool.ismaster(e.user_id))) {
                     logger.info(`已开启表情群组分离,非主人禁止私聊发送`)
                     return false
                 }
+
+                let i = -1
+                for(let item of obj[msg][`list`]){
+                    i++
+                    indexArr.push(i)
+                }
             }
         }else{
+            let i = -1
             for(let item of obj[msg][`list`]){
-                let i = -1
                 i++
                 indexArr.push(i)
             }
