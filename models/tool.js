@@ -21,9 +21,12 @@ export function masterQQ(){
     // // 转换为字符串类型 
     // const masterqq = keyValue[0]
     // //.toString()
-    let masterqq = config.masterQQ[0]
-    //返回主人QQ号
-    return masterqq
+    for(let i of config.masterQQ){
+      if(!isNaN(Number(i))){
+        return Number(i)
+      }
+    }
+    //返回首个主人QQ号
 }
 
 
