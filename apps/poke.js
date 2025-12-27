@@ -1,12 +1,12 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";//忽略ssl
 import * as tool from '../models/tool.js';
 import fs from 'fs';
-import axios from 'axios';
+import axios from 'axios'; 
 import https from 'https';
 const cfg_priority = await tool.set_priority("GroupPoke")
 //如果用户没有自定义api则使用默认api
 const DefaultApi =[
-    "https://www.dmoe.cc/random.php",//樱花二次元图
+    "https://api.ovoo.cc/api/cjm.php?",//柴郡猫
 ]
 export class San_Poke extends plugin {
     constructor() {
@@ -14,8 +14,8 @@ export class San_Poke extends plugin {
             //后端信息
             name: 'San-Plugin戳一戳',//插件名字，可以随便写
             dsc: '戳一戳随机表情包',//插件介绍，可以随便写
-            event: 'notice.group.poke',//这个直接复制即可，别乱改
-            //priority: cfg_priority,//执行优先级：数值越低越6
+            event: 'notice.*.poke',//这个直接复制即可，别乱改
+            priority: cfg_priority,//执行优先级：数值越低越6
             rule: [
                 {
                     fnc: 'poke'
