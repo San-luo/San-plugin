@@ -41,10 +41,12 @@ export class gete extends plugin {
         if(source.message[0].type == "json"){
             //e.reply("暂时不支持NC崽对Bot所发聊天记录消息的引用,请非引用添加,手动转发")
           const innerData = JSON.parse(source.message[0].data);
-          const resid = innerData.meta.detail.resid;
-
+          const resid = innerData.meta.detail?.resid;
+          if(resid){
           let msg = e.isGroup ? await e.group.getForwardMsg(resid) : await e.friend.getForwardMsg(resid)
           source = msg
+          }
+
         }
         BigIntToString(source)
     
