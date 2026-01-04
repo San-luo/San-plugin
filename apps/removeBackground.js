@@ -1,13 +1,8 @@
-/*
- * @Author: random
- * @Date: 2025-11-11 23:05:58
- * @Last Modified by: random
- * @Last Modified time: Do not Edit
- */
 import { Client } from '@gradio/client'
 import * as tool from '../models/tool.js';
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";//忽略ssl
 
-const apiUrl = 'http://frp-fit.com:45628/' // Gradio API 地址,致谢@喵~  api的搭建和提供者
+const apiUrl = 'https://frp-key.com:48626/' // Gradio API 地址,致谢 @喵~  api的搭建和提供者
 const cfg_priority = await tool.set_priority("removeBackground")
 export class San_RemoveBackground extends plugin {
     constructor() {
