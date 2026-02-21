@@ -420,7 +420,7 @@ export class San_AddFace extends plugin {
                     let i = -1
                     for(let item of obj[msg][`list`]){
                         i++
-                        if(item.belong.includes(e.group_id) || item.belong.length == 0 || !(item?.belong)){
+                        if(item?.belong?.includes(e.group_id) || item?.belong?.length == 0 || !(item?.belong)){
                             indexArr.push(i)
                         }
                     }
