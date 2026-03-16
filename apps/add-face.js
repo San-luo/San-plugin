@@ -131,7 +131,8 @@ export class San_AddFace extends plugin {
             //     e.reply([segment.reply(source.message_id), "暂时不支持NC崽对Bot所发聊天记录消息的引用添加,请使用非引用添加,并手动转发此消息"])
             //     return false
             // }
-            source.reply=e.reply
+            source.reply = e.reply
+            source.isGroup = e.isGroup
             await HandelFace(source,match[3])
         }else{
         /** 设置上下文，后续接收到内容会执行hei方法 */

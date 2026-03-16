@@ -605,8 +605,9 @@ export async function getFMsg(e){
   // NC协议 
   if (e.message[0].type == "forward") {
     let data = []
-    let msg_data = e.isGroup ? (await e.group.getChatHistory(e.message_seq, 1)).pop() : (await e.friend.getChatHistory(e.message_seq, 1)).pop() 
-    logger.info(msg_data.message)
+    // let msg_data = e.isGroup ? (await e.group.getChatHistory(e.message_seq, 1)).pop() : (await e.friend.getChatHistory(e.message_seq, 1)).pop() 
+    // logger.info(msg_data.message)
+    let msg_data = e
     for(let item of msg_data.message[0]['content']){
         for(let i of item.message){
           if(i.type == "image"){
