@@ -604,6 +604,17 @@ async function fallbackToImage(e, rawList, title, addTime = null, returnSegment 
                     content += `<img src="${url}" style="max-width:250px; border-radius:6px; margin: 4px 0; display:block;"/>`;
                 }
             }
+            else if (item.type === 'json' && item.data) {
+                try {
+                    let p = typeof item.data === 'string' ? JSON.parse(item.data) : item.data;
+                    if (p.app === 'com.tencent.multimsg' && p.meta?.detail?.news) {
+                        let newsHtml = p.meta.detail.news.map(n => `<div style="color:#666; font-size:12px; margin-bottom:2px;">• ${n.text}</div>`).join('');
+                        content += `<div style="background:rgba(0,0,0,0.03); padding:8px; border-radius:4px; margin:4px 0; border:1px dashed #ccc;">${newsHtml}</div>`;
+                    } else {
+                        content += `<div style="color:#999; font-size:12px;">[卡片消息: ${p.desc || p.app || '未知'}]</div>`;
+                    }
+                } catch (err) { content += `<div style="color:#999; font-size:12px;">[卡片消息解析失败]</div>`; }
+            }
             else if (item.type === 'forward' || item.type === 'node' || item.message || item.data?.message) {
                 let innerElements = item.type === 'forward' ? (item.content || item.data?.content) : (item.message || item.data?.message);
                 let senderName = item.nickname || item.data?.nickname || item.name || item.data?.name || item.sender?.nickname || (item.type === 'forward' ? '[嵌套的聊天记录]' : '转发消息');
