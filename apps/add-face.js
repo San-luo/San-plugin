@@ -3,9 +3,11 @@ import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
 import common from '../../../lib/common/common.js';
+import puppeteer from '../../../lib/puppeteer/puppeteer.js';
+
 let user_tags = {}//用作中转变量
 let laidianNub = 10 //来点表情 的发送表情数量(聊天记录形式)
-const maxAttempts = 10 //最大尝试重新发送次数
+const maxAttempts = 1 //最大尝试重新发送次数
 
 let faceFile = "./data/San/face/userface.json"
 export class San_AddFace extends plugin {
@@ -133,6 +135,8 @@ export class San_AddFace extends plugin {
             // }
             source.reply = e.reply
             source.isGroup = e.isGroup
+            source.group = e?.group
+            source.friend = e?.friend
             await HandelFace(source,match[3])
         }else{
         /** 设置上下文，后续接收到内容会执行hei方法 */
@@ -331,6 +335,8 @@ export class San_AddFace extends plugin {
         let sendNub = laidianNub
         let res = 'failed'
         let atteptCount = 0
+        let faceArr = []
+        let tag = ``
         while(atteptCount < maxAttempts && res === 'failed'){
             const msg = await tool.getText(e)
             const reg = /^#?(散|san|San)?来点(.*)$/
@@ -339,6 +345,7 @@ export class San_AddFace extends plugin {
                 e.reply("表情名称为空!")
                 return
             }
+            tag = match[2]
             let obj = await tool.readFromJsonFile(faceFile)
             //logger.info(obj)
             let facelist = obj[match[2]].list
@@ -348,6 +355,7 @@ export class San_AddFace extends plugin {
                 const randomIndex = Math.floor(Math.random() * facelist.length);
                 let face = facelist.splice(randomIndex, 1)[0]; // 移除并返回该元素
                 const matchType = face.type
+                faceArr.push(face)
                 //以下为iamge消息的处理
                 if (matchType == "image") {
                     replymsg.push(segment.image(face.imageFile))
@@ -367,6 +375,12 @@ export class San_AddFace extends plugin {
                 if (matchType == "face") {
                     replymsg.push(segment.face(obj[msg].list[randomIndex].id))
                 }//face消息处理完毕
+
+                if (matchType == "forward") {
+                    for(let i of face.msg){
+                        replymsg.push(i.message)
+                    }
+                }
             }
 
             atteptCount++
@@ -381,7 +395,21 @@ export class San_AddFace extends plugin {
             }
         }
         if (res == 'failed') {
-            e.reply("消息风控,发送失败辣")
+            e.reply(`报错! 转图片发送...`)
+            // 转图片发送
+            const html = msgToImg(faceArr,tag)
+            const tpPath = `./plugins/San-plugin/resources/html/temp_render_${tool.getId()}.html`
+            fs.writeFileSync(tpPath, html, 'utf8');
+            let img;
+            try {
+                img = await puppeteer.screenshot('SanFace', { tplFile: tpPath });
+                await e.reply(img)
+            } finally {
+                if (fs.existsSync(tpPath)) {
+                    try { fs.unlinkSync(tpPath); } catch (err) {}
+                }
+            }
+
         }
     }
     //表情触发并回复
@@ -508,39 +536,6 @@ export class San_AddFace extends plugin {
         tool.JsonWrite(obj, faceFile)
         return false
     }
-
-    //合并原版崽的添加表情
-    // async mergeFace(e){
-    //     //权限判断
-    //     if ((await isAddOnlyOpen())){
-    //         if (!(await tool.ismaster(e.user_id))) {
-    //             e.reply('你不是我的主人哦')
-    //             return false
-    //         }
-    //     }
-    //     //TRSS崽处理方式
-    //     if(fs.existsSync("./data/messageJson")){
-    //         // 目标文件夹路径
-    //         const folderPath = './data/messageJson';
-    //         // 读取文件夹内容
-    //         let jsonFiles
-    //         fs.readdir(folderPath, (err, files) => {
-    //         if (err) throw err;
-    //         // 筛选.json后缀的文件
-    //         jsonFiles = files.filter(file => path.extname(file) === '.json');
-    //         });
-    //         for(let item of jsonFiles){
-    //             let oldData = await tool.readFromJsonFile(`${folderPath}/${item}`)
-    //             let allData = await tool.readFromJsonFile(faceFile)
-    //             const oldkey = Object.keys(oldData)
-    //             const allkey = Object.keys(allData)
-    //             for(let k of oldkey){
-    //                 //待定
-    //             }
-    //         }
-    //     }
-
-    // }
 }
 
 //监听模式,废弃
@@ -676,7 +671,83 @@ async function HandelFace(e,tag,isglobal) {
 
 }
 
-async function getFaceData(e) {
+async function getFaceData() {
     const data = await tool.readFromJsonFile(faceFile)
     return data
+}
+
+/**
+ * 获取消息转图的html
+ * @param data 包含多个表情的数组
+ * @param tag 触发词
+ * @returns 返回html字符串
+ */
+function msgToImg(data,tag) {
+    let html = fs.readFileSync('./plugins/San-plugin/resources/html/msg.html', 'utf8');
+    let msg_item = ``
+    let newData = []
+    for(let i of data){
+        if(i.type == "forward"){
+            for(let t of i.msg){
+                const sender_id = t.user_id
+                const nickname = t.nickname
+                    newData.push({
+                        "sender_id": sender_id,
+                        "nickname": nickname,
+                        "type": "other",
+                        "msg": t.message,
+                        "time": tool.convertTime(t.time * 1000,0)
+                        // "imagefile": m.data?.file || m?.file,
+                        // "text": m.data?.text || m?.text
+                    })
+            }
+            continue
+        }
+        newData.push(i)
+    }
+    for(let i of newData) {
+        let sender_id = i.sender_id || "3685041593"
+        let nickname = i.nickname || "雾"
+        let msg_text_wrap = ``
+        switch(i.type){
+            case "image":
+                msg_text_wrap += `<img src="${path.resolve(i.imageFile)}" class="msg-img"/>\n`
+            break
+            case "text":
+                msg_text_wrap += `<div class="msg-text">${i.text}</div>\n`
+            break
+            case "json":
+            case "other":
+                    for(let t of i.msg) {
+                        switch(t.type){
+                            case "image":
+                                msg_text_wrap += `<img src="${path.resolve(t.data?.file || t.file)}" class="msg-img"/>\n`
+                            break
+                            case "text":
+                                msg_text_wrap += `<div class="msg-text">${t.data?.text || t.text}</div>\n`
+                            break
+                        }
+                    }
+
+        }
+        msg_item += `
+            <div class="msg-item">
+                <div class="avatar-wrap">
+                    <img src="https://q1.qlogo.cn/g?b=qq&nk=${sender_id}&s=100" class="avatar" />
+                </div>
+                <div class="msg-content">
+                    <div class="msg-header">
+                        <span class="user-name">${nickname}</span>
+                        <span class="msg-time">${i.time}</span>
+                    </div>
+                    <div class="msg-text-wrap">
+                        ${msg_text_wrap}
+                    </div>
+                </div>
+            </div>\n`
+    }
+    html = html.replace("Tag",tag)
+    html = html.replace("Time",tool.convertTime(Date.now(),0))
+    html = html.replace("Target",msg_item)
+    return html
 }

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    body { 
+        font-family: "Microsoft YaHei", sans-serif; 
+        background: #f0f2f5; 
+        padding: 20px; 
+        width: 620px; 
+        margin:0;
+    }
+    .box { 
+        background: #fff; 
+        border-radius: 18px; 
+        padding: 15px 20px; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.06); 
+    }
+    .header-container { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        border-bottom: 2px solid #f0f0f0; 
+        padding-bottom: 10px; 
+        margin-bottom: 15px; 
+    }
+    .t { 
+        font-size: 22px; 
+        font-weight: bold; 
+        color: #111; 
+        margin: 0; 
+    }
+    .add-time { 
+        font-size: 13px; 
+        color: #adb5bd; 
+    }
+    .msg-box {
+        background:#f4f5f7; 
+        border-radius:12px; 
+        overflow:hidden; 
+        box-shadow:inset 0 0 0 1px rgba(0,0,0,0.05);
+    }
+    .msg-item {
+        margin:0; 
+        padding:8px 12px; 
+        background:#f4f5f7; 
+        border-radius:0; 
+        border-left:3px solid #c0c4cc; 
+        display:flex; 
+        flex-direction:row; 
+        align-items:flex-start;
+    }
+    .avatar-wrap {
+        display:flex; 
+        align-items:center; 
+        height:100%;
+    }
+    .avatar {
+        width:28px; 
+        height:28px; 
+        border-radius:50%; 
+        margin-right:8px; 
+        border:1px solid rgba(0,0,0,0.1);
+    }
+    .msg-content {
+        flex:1; 
+        min-width:0;
+    }
+    .msg-header {
+        display: flex; 
+        align-items: center; 
+        margin-bottom: 4px;
+    }
+    .user-name {
+        color:#666; 
+        font-size:13px; 
+        font-weight:bold;
+    }
+    .msg-time {
+        color:#adb5bd; 
+        font-size:11px; 
+        margin-left:8px; 
+        font-weight:normal;
+    }
+    .msg-text-wrap {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;           /* 防止内容溢出 */
+        max-width: 100%;            /* 限制最大宽度 */
+    }
+    .msg-text {
+        white-space: pre-wrap;
+        margin: 0;
+        padding: 0;
+        word-wrap: break-word;      /* 允许长单词换行 */
+        word-break: break-all;      /* 允许任意字符间换行 */
+        overflow-wrap: break-word;  /* 现代浏览器的换行支持 */
+        max-width: 100%;            /* 限制最大宽度 */
+    }
+    .msg-img {
+        max-width:250px; 
+        border-radius:6px; 
+        margin: 4px 0; 
+        display:block;
+    }
+</style>
+</head>
+<body>
+    <div class="box">
+        <div class="header-container">
+            <div class="t">Tag</div>
+            <div class="add-time">Time</div>
+        </div>
+        <div class="msg-box">
+
+            <!-- <div class="msg-item">
+                <div class="avatar-wrap">
+                    <img src="https://q1.qlogo.cn/g?b=qq&nk=3126986875&s=100" class="avatar" />
+                </div>
+                <div class="msg-content">
+                    <div class="msg-header">
+                        <span class="user-name">散落の碎片.</span>
+                        <span class="msg-time">03-21 11:48</span>
+                    </div>
+                    <div class="msg-text-wrap">
+                        <div class="msg-text">9963</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="msg-item">
+                <div class="avatar-wrap">
+                    <img src="https://q1.qlogo.cn/g?b=qq&nk=3126986875&s=100" class="avatar" />
+                </div>
+                <div class="msg-content">
+                    <div class="msg-header">
+                        <span class="user-name">散落の碎片.</span>
+                        <span class="msg-time">03-21 12:00</span>
+                    </div>
+                    <div class="msg-text-wrap">
+                        <div class="msg-text">ab</div>
+                        <img src="file:///D:/San_D/TRSS-Yunzai/data/San/face/images/mmzsw7atlv0my.gif" class="msg-img"/>
+                    </div>
+                </div>
+            </div>
+             -->
+            Target
+        </div>
+    </div>
+</body>
+</html>

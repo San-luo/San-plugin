@@ -33,7 +33,8 @@ export class gete extends plugin {
             } else if (e.friend?.getChatHistory) {
               source = (await e.friend.getChatHistory(e.source.time, 1)).pop()
             }
-          }         
+          }       
+          let rawSource = source  
         if (!source){
             e.reply("请引用消息来获取e实例")
             return
@@ -52,7 +53,8 @@ export class gete extends plugin {
     
         let messages = source 
             const jsonString = JSON.stringify(messages, null, 2);
-            const msgjsonString = JSON.stringify(messages.message, null, 2);
+            let msgjsonString = JSON.stringify(messages.message, null, 2);
+            if(msgjsonString == undefined){msgjsonString = `===raw_e===:\n${JSON.stringify(rawSource, null, 2)}`}
             let makeForwardMsg = await common.makeForwardMsg(e, ["_____message_____",msgjsonString,"_____________","_____e实例_____",jsonString,"_____________"], 'e实例')
             let res = await e.reply(makeForwardMsg)
             if(Object.keys(res) == "error"){
