@@ -6,8 +6,7 @@ import common from '../../../lib/common/common.js';
 import puppeteer from '../../../lib/puppeteer/puppeteer.js';
 
 let user_tags = {}//用作中转变量
-let laidianNub = 10 //来点表情 的发送表情数量(聊天记录形式)
-const maxAttempts = 1 //最大尝试重新发送次数
+let laidianNub = 50 //来点表情 的发送表情数量(聊天记录形式)
 
 let faceFile = "./data/San/face/userface.json"
 export class San_AddFace extends plugin {
@@ -334,10 +333,8 @@ export class San_AddFace extends plugin {
         // laidianNub默认值定义在代码顶部 默认为10
         let sendNub = laidianNub
         let res = 'failed'
-        let atteptCount = 0
         let faceArr = []
         let tag = ``
-        while(atteptCount < maxAttempts && res === 'failed'){
             const msg = await tool.getText(e)
             const reg = /^#?(散|san|San)?来点(.*)$/
             let match = msg.match(reg)
@@ -383,17 +380,24 @@ export class San_AddFace extends plugin {
                 }
             }
 
-            atteptCount++
             let sendmsg = await common.makeForwardMsg(e,replymsg,`-${match[2]}-`)
-            logger.warn(`第${atteptCount}次尝试发送`)
-            let code = await e.reply(sendmsg) //如果发送失败 IC:undefined , NC:{error: xxxx }
-            if(typeof code == 'object'){
-                 res = Object.keys(code)
-                 
+            let code
+            try {
+                code = await e.reply(sendmsg) //如果发送失败 IC:undefined , NC:{error: xxxx }
+            } catch (err) {
+                logger.error(err)
+                code = { error: err }
+                res = 'failed'
+                logger.warn(code)
+            }
+            logger.warn(code)
+            if(typeof code == 'object' && code?.error){
+                 logger.warn('检测到错误，设置res=failed并break')
+                 res = 'failed'
             }else if(code == undefined){
                 res = 'success'
             }
-        }
+
         if (res == 'failed') {
             e.reply(`报错! 转图片发送...`)
             // 转图片发送
@@ -706,8 +710,8 @@ function msgToImg(data,tag) {
         newData.push(i)
     }
     for(let i of newData) {
-        let sender_id = i.sender_id || "3685041593"
-        let nickname = i.nickname || "雾"
+        let sender_id = i.sender_id || Bot.info.user_id || Object.keys(Bot)[0] || "0000"
+        let nickname = i.nickname || Bot.info.nickname || Bot[sender_id]?.sdk?.nickname || "匿名用户"
         let msg_text_wrap = ``
         switch(i.type){
             case "image":
