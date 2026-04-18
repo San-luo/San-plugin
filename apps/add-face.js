@@ -403,7 +403,8 @@ export class San_AddFace extends plugin {
             if(typeof code == 'object' && code?.error){
                  logger.warn('检测到错误，设置res=failed并break')
                  res = 'failed'
-            }else if(code == undefined){
+            }else{
+                // code 是 undefined 或者是没有 error 属性的对象，都视为成功
                 res = 'success'
             }
 
