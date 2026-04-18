@@ -62,6 +62,17 @@ export function supportGuoba () {
             }
         },
         {
+            field: 'config.daily_url',
+            label: '日报api配置',
+            helpMessage: '日报接口的url',
+            bottomHelpMessage: '例如https://daily.kuro.ltd/api/v1/dayNews',
+            component: 'Input',
+            required: true,
+            componentProps: {
+                placeholder: '请输入日报接口url'
+            }
+        },
+        {
             field: 'config.add_face',
             label: '表情添加',
             bottomHelpMessage: '`#添加.....`功能',

@@ -4,3 +4,4 @@ add_onlyMaster: false
 poke_onlyBot: true
 poke: true
 face_groupApart: false
+daily_url: "https://daily.kuro.ltd/api/v1/dayNews"

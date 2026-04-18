@@ -1,5 +1,6 @@
 import * as tool from '../models/tool.js';
 const cfg_priority = await tool.set_priority("daily_paper")
+const daily_url = await tool.set_otherCfg("daily_url")
 export class daily extends plugin {
     constructor() {
         super({
@@ -19,7 +20,7 @@ export class daily extends plugin {
     async daily(e){
         async function get(e) {
             try{
-                const response = await fetch('http://127.0.0.1:55608/api/v1/dayNews')
+                const response = await fetch(daily_url)
                 if (!response.ok) throw new Error(`HTTP错误: ${response.status}`);
                 const data = await response.json()
                 let base64 = data[`data`].base64
