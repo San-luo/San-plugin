@@ -504,11 +504,8 @@ export class San_AddFace extends plugin {
                 return
             }
             let facelist = obj[match[2]].list
-            // 检查是否包含视频，如果是视频类型则只发送1个
-            const hasVideo = facelist.some(face => face.type === 'video')
-            if (hasVideo) {
-                sendNub = 1
-            } else if(facelist.length < 10){
+            // 根据表情数量决定发送数量
+            if(facelist.length < 10){
                 sendNub = facelist.length
             }
             let replymsg = []
