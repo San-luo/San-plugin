@@ -323,30 +323,20 @@ export async function readFromJsonFile(filePath,create = false) {
  * @return {Promise} 返回一个Promise对象，当图片成功下载并保存到指定路径时，Promise将被resolve；如果在下载或保存过程中发生错误，Promise将被reject。
  */
 export async function downloadImage(url, targetPath) {
-  axios({
-    url,
-    method: 'get',
-    responseType: 'stream'
-  }).then(response => {
-    // 创建一个可写的流，它允许写入文件系统
-    const writer = fsS.createWriteStream(targetPath);
-    // 管道流
-    response.data.pipe(writer);
-    // 监听管道完成事件
-    writer.on('finish', () => {
-      logger.info(`文件已保存至 ${targetPath}`);
+  try {
+    const response = await axios({
+      url,
+      method: 'get',
+      responseType: 'arraybuffer',
+      timeout: 60000,
     });
-    // 监听错误事件
-    writer.on('error', error => {
-      logger.error(`下载文件失败: ${error.message}`);
-    });
-    // 如果响应结束前写入发生错误，则取消响应
-    writer.on('close', () => {
-      response.data.destroy();
-    });
-  }).catch(error => {
+    await fsS.promises.writeFile(targetPath, Buffer.from(response.data));
+    logger.info(`文件已保存至 ${targetPath}`);
+    return true;
+  } catch (error) {
     logger.error(`下载文件失败: ${error.message}`);
-  });
+    return false;
+  }
 }
 
 /**
@@ -650,4 +640,32 @@ export async function getFMsg(e){
     return data
   }
   return false
+}
+
+export async function downloadVideo(videoElem, targetPath) {
+  try {
+    logger.info(`[San-plugin] 视频元素: type=${videoElem.type}, url=${videoElem.url}, file=${videoElem.file?.substring(0,50)}`)
+
+    // 方案1: NapCat/OneBot - 直接使用 url 字段
+    if (videoElem.url) {
+      logger.info(`[San-plugin] 使用 NapCat/OneBot url 下载`)
+      await Bot.download(videoElem.url, targetPath)
+      logger.info(`[San-plugin] 视频下载完成: ${targetPath}`)
+      return true
+    }
+
+    // 方案2: 尝试使用 file 字段作为 URL
+    if (videoElem.file && String(videoElem.file).startsWith('http')) {
+      logger.info(`[San-plugin] 使用 file 字段作为 URL 下载`)
+      await Bot.download(videoElem.file, targetPath)
+      logger.info(`[San-plugin] 视频下载完成: ${targetPath}`)
+      return true
+    }
+
+    logger.error('[San-plugin] 视频消息缺少 url 或 file 字段，无法下载')
+    return false
+  } catch (error) {
+    logger.error('[San-plugin] downloadVideo错误:', error?.message || error)
+    return false
+  }
 }

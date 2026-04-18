@@ -345,6 +345,10 @@ export class San_AddFace extends plugin {
             tag = match[2]
             let obj = await tool.readFromJsonFile(faceFile)
             //logger.info(obj)
+            if (!obj[match[2]]) {
+                e.reply(`没有找到表情 - ${match[2]} -`)
+                return
+            }
             let facelist = obj[match[2]].list
             if(facelist.length < 10){sendNub = facelist.length}
             let replymsg = []
@@ -378,6 +382,11 @@ export class San_AddFace extends plugin {
                         replymsg.push(i.message)
                     }
                 }
+
+                //以下为video消息的处理
+                if (matchType == "video") {
+                    replymsg.push(segment.video(face.videoFile))
+                }//video消息处理完毕
             }
 
             let sendmsg = await common.makeForwardMsg(e,replymsg,`-${match[2]}-`)
@@ -518,6 +527,11 @@ export class San_AddFace extends plugin {
         if (matchType == "face") {
             sendmsg = await e.reply(segment.face(obj[msg].list[randomIndex].id))
         }//face消息处理完毕
+
+        //以下为video消息的处理
+        if (matchType == "video") {
+            sendmsg = await e.reply(segment.video(face.videoFile))
+        }//video消息处理完毕
         
         let Rand
         if(sendmsg?.data?.message_id){
@@ -622,6 +636,20 @@ async function HandelFace(e,tag,isglobal) {
         await tool.downloadImage(BascialDate.url, imageFile)
         BascialDate.imageFile = imageFile
     }
+    //对video类型消息处理
+    if (msgtype == "video") {
+        BascialDate.type = "video"
+        let videoFile = `./data/San/face/images/${tool.getId()}.mp4`//构造视频文件id
+        let videoElem = e.message[0]
+        // 确保 self_id 可用
+        if (!videoElem.self_id && e.self_id) videoElem.self_id = e.self_id
+        let ok = await tool.downloadVideo(videoElem, videoFile)
+        if (!ok) {
+            e.reply(`- ${tag} -视频下载失败`)
+            return
+        }
+        BascialDate.videoFile = videoFile
+    }
     //对forward类型消息处理
     if (msgtype == "forward" || msgtype == "json") {
         //let forwardMsg = []
@@ -631,7 +659,7 @@ async function HandelFace(e,tag,isglobal) {
         BascialDate.msg = data//存消息数组 未进行制作合并转发
     }
     //对非iamge类型消息处理
-    if (msgtype !== "image" && msgtype !== "forward" && msgtype !== "json") {
+    if (msgtype !== "image" && msgtype !== "video" && msgtype !== "forward" && msgtype !== "json") {
         for(let i of e.message){
             if(i.type == "image"){
             let imageFile = `./data/San/face/images/${tool.getId()}.gif`//构造表情图片id
