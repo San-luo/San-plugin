@@ -68,15 +68,18 @@ export class daily extends plugin {
                 },
                 {
                     reg: '^#绫华日报定时(.+)$',
-                    fnc: 'setCron'
+                    fnc: 'setCron',
+                    permission: 'master'
                 },
                 {
                     reg: '^#日报开启白名单$',
-                    fnc: 'enableWhiteList'
+                    fnc: 'enableWhiteList',
+                    permission: 'master'
                 },
                 {
                     reg: '^#日报关闭白名单$',
-                    fnc: 'disableWhiteList'
+                    fnc: 'disableWhiteList',
+                    permission: 'master'
                 }
             ]
         });
