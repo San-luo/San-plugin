@@ -650,7 +650,7 @@ export async function downloadVideo(e, videoElem, targetPath) {
     // 方案1: NapCat/OneBot - 直接使用 url 字段
     if (videoElem.url) {
       logger.info(`[San-plugin] 使用 NapCat/OneBot url 下载`)
-      await Bot.download(videoElem.url, targetPath)
+      await common.downFile(videoElem.url, targetPath)
       logger.info(`[San-plugin] 视频下载完成: ${targetPath}`)
       return true
     }
@@ -715,7 +715,7 @@ export async function downloadVideo(e, videoElem, targetPath) {
         logger.info(`[San-plugin] 获取到视频下载链接: ${videoUrl}`)
 
         // 下载视频
-        await Bot.download(videoUrl, targetPath)
+        await common.downFile(videoUrl, targetPath)
         logger.info(`[San-plugin] 视频下载完成: ${targetPath}`)
         return true
       } catch (err) {
@@ -727,7 +727,7 @@ export async function downloadVideo(e, videoElem, targetPath) {
     // 方案3: 尝试使用 file 字段作为 URL
     if (videoElem.file && String(videoElem.file).startsWith('http')) {
       logger.info(`[San-plugin] 使用 file 字段作为 URL 下载`)
-      await Bot.download(videoElem.file, targetPath)
+      await common.downFile(videoElem.file, targetPath)
       logger.info(`[San-plugin] 视频下载完成: ${targetPath}`)
       return true
     }
