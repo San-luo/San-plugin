@@ -7,6 +7,7 @@ import puppeteer from 'puppeteer';
 import axios from 'axios';
 import common from '../../../lib/common/common.js';
 import config from '../../../lib/config/config.js'
+import * as Packet from './Packet.js'
 /**
  * 获取主人qq号
  * 返回number 类型
@@ -642,7 +643,7 @@ export async function getFMsg(e){
   return false
 }
 
-export async function downloadVideo(videoElem, targetPath) {
+export async function downloadVideo(e, videoElem, targetPath) {
   try {
     logger.info(`[San-plugin] 视频元素: type=${videoElem.type}, url=${videoElem.url}, file=${videoElem.file?.substring(0,50)}`)
 
@@ -654,7 +655,76 @@ export async function downloadVideo(videoElem, targetPath) {
       return true
     }
 
-    // 方案2: 尝试使用 file 字段作为 URL
+    // 方案2: ICQQ 协议 - 使用 Packet 方法获取下载链接（需要 Bili-Plugin）
+    const botId = videoElem.self_id || e.self_id || Object.keys(Bot)[0]
+    const bot = Bot[botId]
+
+    if (bot?.icqq || bot?.adapter?.name === 'ICQQ') {
+      // 提取 fid
+      let fid = videoElem.fid
+
+      if (!fid) {
+        logger.error('[San-plugin] 视频消息缺少 fid 字段')
+        return false
+      }
+
+      logger.info(`[San-plugin] 使用 Packet 方法获取视频链接, fid: ${fid}`)
+
+      try {
+        // 构造请求 body（参考 Bili-Plugin/apps/Getrecordvideo.js）
+        const body = {
+          1: {
+            1: {
+              1: 1,
+              2: 200,
+            },
+            2: {
+              101: 2,
+              102: 2,
+              200: 2,
+              202: {
+                1: e.group_id,
+              },
+            },
+            3: {
+              1: 2,
+            },
+          },
+          3: {
+            1: {
+              2: fid,
+              3: 1,
+            },
+            2: {
+              2: {},
+            },
+          },
+        }
+
+        // 调用 Packet 方法获取视频下载链接
+        const rsp = await Packet.sendOidbSvcTrpcTcp(e, 'OidbSvcTrpcTcp.0x11EA_200', body)
+        const rkey = rsp[3][1]
+
+        if (!rkey) {
+          logger.error('[San-plugin] 获取视频 rkey 失败')
+          return false
+        }
+
+        // 构造下载 URL
+        const videoUrl = `https://${rsp[3][3][1]}${rsp[3][3][2]}${rkey}`
+        logger.info(`[San-plugin] 获取到视频下载链接: ${videoUrl}`)
+
+        // 下载视频
+        await Bot.download(videoUrl, targetPath)
+        logger.info(`[San-plugin] 视频下载完成: ${targetPath}`)
+        return true
+      } catch (err) {
+        logger.error('[San-plugin] Packet 方法获取视频链接失败:', err?.message || err)
+        return false
+      }
+    }
+
+    // 方案3: 尝试使用 file 字段作为 URL
     if (videoElem.file && String(videoElem.file).startsWith('http')) {
       logger.info(`[San-plugin] 使用 file 字段作为 URL 下载`)
       await Bot.download(videoElem.file, targetPath)
