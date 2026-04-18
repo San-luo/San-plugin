@@ -19,7 +19,7 @@ export class daily extends plugin {
     async daily(e){
         async function get(e) {
             try{
-                const response = await fetch('http://localhost:55608/api/v1/dayNews')
+                const response = await fetch('https://daily.kuro.ltd/api/v1/dayNews')
                 if (!response.ok) throw new Error(`HTTP错误: ${response.status}`);
                 const data = await response.json()
                 let base64 = data[`data`].base64
