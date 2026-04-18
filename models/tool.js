@@ -8,11 +8,13 @@ import axios from 'axios';
 import common from '../../../lib/common/common.js';
 import config from '../../../lib/config/config.js'
 import * as Packet from './Packet.js'
+
 /**
  * 获取主人qq号
  * 返回number 类型
  */
 export function masterQQ(){
+  
     // // 读取YAML文件
     // const fileContents = await fs.readFile('./config/config/other.yaml', 'utf8');
     // // 将YAML内容解析为JavaScript对象
@@ -727,7 +729,7 @@ export async function downloadVideo(e, videoElem, targetPath) {
     // 方案3: 尝试使用 file 字段作为 URL
     if (videoElem.file && String(videoElem.file).startsWith('http')) {
       logger.info(`[San-plugin] 使用 file 字段作为 URL 下载`)
-      await common.downFile(videoElem.file, targetPath)
+      await Bot.download(videoElem.file, targetPath)
       logger.info(`[San-plugin] 视频下载完成: ${targetPath}`)
       return true
     }
