@@ -408,6 +408,13 @@ export class San_AddFace extends plugin {
             }
 
         if (res == 'failed') {
+            // 检查是否包含视频，如果有视频则不转图片
+            const hasVideo = faceArr.some(face => face.type === 'video')
+            if (hasVideo) {
+                e.reply(`视频发送失败`)
+                return
+            }
+
             e.reply(`报错! 转图片发送...`)
             // 转图片发送
             const html = msgToImg(faceArr,tag)
