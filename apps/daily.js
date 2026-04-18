@@ -84,22 +84,13 @@ export class daily extends plugin {
         // 定时任务：每分钟检查一次
         this.task = {
             name: '绫华日报定时',
-            fnc: 'daily',
+            fnc: () => this.cronDaily(),
             cron: '0 * * * * ?'
         }
     }
     async daily(e) {
         const groups = loadWhiteList();
         if (groups.length > 0 && !groups.includes(e.group_id)) {
-            return false;
-        }
-
-        // 检查是否到达设定时间
-        const now = new Date();
-        const cronTime = getCronTime();
-        const [hour, minute] = cronTime.split(':').map(Number);
-
-        if (now.getHours() !== hour || now.getMinutes() !== minute) {
             return false;
         }
 
@@ -114,6 +105,34 @@ export class daily extends plugin {
             e.reply(`日报请求异常`)
         }
         return true;
+    }
+
+    async cronDaily() {
+        // 检查是否到达设定时间
+        const now = new Date();
+        const cronTime = getCronTime();
+        const [hour, minute] = cronTime.split(':').map(Number);
+
+        if (now.getHours() !== hour || now.getMinutes() !== minute) {
+            return false;
+        }
+
+        const groups = loadWhiteList();
+        if (groups.length === 0) return false;
+
+        try {
+            const response = await fetch(daily_url)
+            if (!response.ok) throw new Error(`HTTP错误: ${response.status}`);
+            const data = await response.json()
+            let base64 = data[`data`].base64
+
+            // 向所有白名单群发送
+            for (const groupId of groups) {
+                Bot.pickGroup(groupId).sendMsg(segment.image(`base64://${base64}`))
+            }
+        } catch(error) {
+            logger.error(`日报定时推送异常:${error}`)
+        }
     }
 
     async setCron(e) {
