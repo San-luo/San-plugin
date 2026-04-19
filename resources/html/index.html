@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
-            /* 简洁配色方案 */
-            --bg-primary: #ffffff;
-            --bg-secondary: #f8f9fa;
-            --border-color: #e0e0e0;
-            --text-primary: #2c3e50;
-            --text-secondary: #7f8c8d;
-            --accent-color: #3498db;
-            --accent-hover: #2980b9;
-            --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            /* 透明玻璃配色方案 */
+            --bg-primary: rgba(255, 255, 255, 0.25);
+            --bg-secondary: rgba(255, 255, 255, 0.2);
+            --border-color: rgba(255, 255, 255, 0.3);
+            --text-primary: #000000;
+            --text-secondary: rgba(0, 0, 0, 0.85);
+            --accent-color: #4fc3f7;
+            --accent-hover: #29b6f6;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         * {
@@ -24,13 +24,14 @@
 
         body {
             font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
-            background-image: url('../img/background.jpg');
+            background-image: url('https://t.alcy.cc/mp');
             background-repeat: no-repeat;
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             min-height: 100vh;
             padding: 20px;
+            margin: 0;
             display: flex;
             justify-content: center;
             align-items: flex-start;
@@ -41,7 +42,8 @@
             max-width: 1200px;
             background: var(--bg-primary);
             border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             padding: 40px;
             margin: 20px 0;
         }
@@ -54,22 +56,24 @@
         }
 
         h1 {
-            font-size: 42px;
-            font-weight: 700;
-            color: var(--text-primary);
+            font-size: 60px;
+            font-weight: 900;
+            color: #1a1a1a;
             margin-bottom: 10px;
             letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
         }
 
         .subtitle-box {
             display: inline-block;
-            padding: 6px 20px;
+            padding: 8px 24px;
             background: var(--accent-color);
             color: white;
             border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 18px;
+            font-weight: 700;
             letter-spacing: 1px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
 
         .section {
@@ -91,9 +95,10 @@
         }
 
         .section-title {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--text-primary);
+            font-size: 32px;
+            font-weight: 900;
+            color: #1a1a1a;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
         }
 
         /* 3列网格布局 */
@@ -119,11 +124,12 @@
 
         .feature-command {
             font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 15px;
-            color: var(--accent-color);
-            font-weight: 600;
-            margin-bottom: 8px;
+            font-size: 20px;
+            color: #0277bd;
+            font-weight: 800;
+            margin-bottom: 10px;
             word-break: break-all;
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8);
         }
 
         .feature-command::before {
@@ -132,9 +138,11 @@
         }
 
         .feature-desc {
-            font-size: 13px;
-            line-height: 1.6;
-            color: var(--text-secondary);
+            font-size: 18px;
+            line-height: 1.7;
+            color: #1a1a1a;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
         }
 
         footer {
@@ -145,13 +153,15 @@
         }
 
         .footer-content {
-            font-size: 14px;
-            color: var(--text-secondary);
+            font-size: 17px;
+            color: #000000;
+            font-weight: 500;
+            text-shadow: 0 1px 3px rgba(255, 255, 255, 0.5);
         }
 
         .footer-tag {
-            color: var(--accent-color);
-            font-weight: 600;
+            color: #0288d1;
+            font-weight: 700;
         }
 
         @media (max-width: 900px) {
