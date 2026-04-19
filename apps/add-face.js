@@ -619,11 +619,6 @@ export class San_AddFace extends plugin {
             }
         }
 
-        // 设置一个标记，用于后续监听机器人发送的消息
-        this.setContext('waitForBotReply', null, { time: 10 })
-        this.botReplyTag = msg
-        this.botReplyFaceIndex = null
-
         let indexArr = []
         //判断是否为群组消息
         if(await isFaceGroupApart()){
