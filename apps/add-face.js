@@ -10,31 +10,6 @@ let laidianNub = 50 //来点表情 的发送表情数量(聊天记录形式)
 
 let faceFile = "./data/San/face/userface.json"
 
-// 初始化目录和文件
-function initFaceData() {
-    const faceDir = "./data/San/face"
-    const imageDir = "./data/San/face/images"
-
-    // 创建目录
-    if (!fs.existsSync(faceDir)) {
-        fs.mkdirSync(faceDir, { recursive: true })
-        logger.info('[San-plugin] 创建表情目录: ' + faceDir)
-    }
-    if (!fs.existsSync(imageDir)) {
-        fs.mkdirSync(imageDir, { recursive: true })
-        logger.info('[San-plugin] 创建图片目录: ' + imageDir)
-    }
-
-    // 创建JSON文件
-    if (!fs.existsSync(faceFile)) {
-        fs.writeFileSync(faceFile, '{}', 'utf8')
-        logger.info('[San-plugin] 创建表情数据文件: ' + faceFile)
-    }
-}
-
-// 在模块加载时初始化
-initFaceData()
-
 export class San_AddFace extends plugin {
     constructor() {
         super({
@@ -57,17 +32,12 @@ export class San_AddFace extends plugin {
                     fnc: 'addswitch'
                 },
                 {
-                    reg: '.*#(散|san|San)?表情(删除|删去|去除)(全部项(.*?))?$',
+                    reg: '^#?(散|san|San)?表情(删除|删去|去除)(全部项(.*?))?$',
                     fnc: 'deleteface'
                 },
                 {
                     reg: '^#?(散|san|San)?来点(.*)$',
                     fnc: 'laidian'
-                },
-                {
-                    reg: '^(.*)$',
-                    fnc: 'recordBotMessage',
-                    log: false,
                 },
                 {
                     reg: '^(.*)$',
@@ -81,88 +51,6 @@ export class San_AddFace extends plugin {
             ]
         })
 
-    }
-
-    // 记录机器人自己发送的消息ID
-    async recordBotMessage(e) {
-        // 只处理视频消息
-        if (!e.message || e.message.length === 0 || e.message[0].type !== 'video') {
-            return false
-        }
-
-        // 只处理机器人自己发送的消息
-        // 检查多种可能的机器人ID
-        const botIds = [e.self_id, Bot.uin, e.bot?.uin, 263735076, 3889045534]
-        const isBotMessage = botIds.some(id => id && (e.user_id == id || String(e.user_id) == String(id)))
-
-        logger.info(`[表情记录] 检测到视频消息，user_id=${e.user_id}, self_id=${e.self_id}, Bot.uin=${Bot.uin}, isBotMessage=${isBotMessage}`)
-
-        if (!isBotMessage) {
-            return false
-        }
-
-        logger.info(`[表情记录] 确认是机器人发送的视频消息`)
-
-        try {
-            const obj = await tool.readFromJsonFile(faceFile)
-            let updated = false
-
-            // 遍历所有表情，找到最近发送的视频表情
-            for (let tag in obj) {
-                if (obj[tag].list && Array.isArray(obj[tag].list)) {
-                    for (let face of obj[tag].list) {
-                        // 只处理视频类型的表情
-                        if (face.type === 'video' && face.videoFile) {
-                            // 检查是否是最近5秒内的表情（避免误匹配）
-                            const faceTime = new Date(face.time).getTime()
-                            const now = Date.now()
-                            if (now - faceTime < 10000) { // 10秒内
-                                // 提取机器人消息的所有ID
-                                let botIds = []
-                                if(e.message_id !== undefined && e.message_id !== null){
-                                    botIds.push(String(e.message_id))
-                                }
-                                if(e.rand !== undefined && e.rand !== null){
-                                    botIds.push(String(e.rand))
-                                }
-                                if(e.real_id !== undefined && e.real_id !== null){
-                                    botIds.push(String(e.real_id))
-                                }
-                                if(e.seq !== undefined && e.seq !== null){
-                                    botIds.push(String(e.seq))
-                                }
-                                if(e.time !== undefined && e.time !== null){
-                                    botIds.push(String(e.time))
-                                }
-                                botIds = [...new Set(botIds)]
-
-                                logger.info(`[表情记录] 机器人发送视频消息，ID: ${JSON.stringify(botIds)}`)
-
-                                // 将机器人消息ID添加到表情的rand数组中
-                                if (!face.rand) {
-                                    face.rand = []
-                                }
-                                for (let id of botIds) {
-                                    if (id && !face.rand.includes(id)) {
-                                        face.rand.push(id)
-                                        updated = true
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (updated) {
-                await tool.JsonWrite(obj, faceFile)
-                logger.info('[表情记录] 已更新机器人消息ID到表情数据')
-            }
-        } catch (error) {
-            logger.error('[表情记录] 记录机器人消息ID失败:', error)
-        }
-
-        return false
     }
 
     async addnext(e) {
@@ -270,7 +158,7 @@ export class San_AddFace extends plugin {
         const state = match[2]
         if (state == "开启") {
             // let url = 'https://sanluo.icu:11111/down/RdDzehzqewKw.js'
-            // await tool.downloadImage(url, "node_modules/icqq/lib/message/parser.js")
+            // await tool.downloadFile(url, "node_modules/icqq/lib/message/parser.js")
             let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
             Cfg.add_face = true
             const updateCfg = yaml.dump(Cfg);
@@ -285,7 +173,7 @@ export class San_AddFace extends plugin {
 
         if (state == "关闭") {
             // let url = 'https://sanluo.top:8888/down/aqcDyo9VfjQX.js'
-            // await tool.downloadImage(url, "node_modules/icqq/lib/message/parser.js")
+            // await tool.downloadFile(url, "node_modules/icqq/lib/message/parser.js")
             let Cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
             Cfg.add_face = false
             const updateCfg = yaml.dump(Cfg);
@@ -325,7 +213,7 @@ export class San_AddFace extends plugin {
 
     async deleteface(e){
 
-        let reg = /.*#(散|san|San)?表情(删除|删去|去除)(全部项(.*?))?$/
+        let reg = /^#?(散|san|San)?表情(删除|删去|去除)(全部项(.*?))?$/
         const str = await tool.getText(e)
         const match = str.match(reg)
         //logger.info(match)
@@ -365,14 +253,6 @@ export class San_AddFace extends plugin {
                     }
 
                 }
-                if(i?.videoFile){
-                    logger.info(i.videoFile)
-                    try {
-                        fs.unlinkSync(i.videoFile)
-                    } catch (error) {
-                        logger.error(error)
-                    }
-                }
             }
             delete facelist[facetag]
             //logger.info(facelist)
@@ -384,7 +264,6 @@ export class San_AddFace extends plugin {
 
         //删除指定项
          if (!isall){
-            try {
                 let source = ""
                 if (e.getReply) {
                     source = await e.getReply()
@@ -399,27 +278,12 @@ export class San_AddFace extends plugin {
                     e.reply("请引用消息来删除")
                     return
                 }
-                let targetIds = []
-                if (source.message_id !== undefined && source.message_id !== null) {
-                    targetIds.push(String(source.message_id))
-                }
-                if (source.rand !== undefined && source.rand !== null) {
-                    targetIds.push(String(source.rand))
-                }
-                if (source.real_id !== undefined && source.real_id !== null) {
-                    targetIds.push(String(source.real_id))
-                }
-                if (source.seq !== undefined && source.seq !== null) {
-                    targetIds.push(String(source.seq))
-                }
-                if (source.time !== undefined && source.time !== null) {
-                    targetIds.push(String(source.time))
-                }
-                targetIds = [...new Set(targetIds)]
-                logger.info(`[表情删除] 引用消息的ID: ${JSON.stringify(targetIds)}`)
-                if (targetIds.length === 0) {
-                    e.reply("没有找到可删除的消息标识")
-                    return
+                            let targetRand
+            if(source.real_id){
+                targetRand = source.message_id// 目标rand值
+            }else if(source.rand){
+                targetRand = source.rand// 目标rand值
+
                 }
                 let obj = await tool.readFromJsonFile(faceFile)
 
@@ -428,28 +292,14 @@ export class San_AddFace extends plugin {
                 // 遍历对象的每个键
                 for (let key in obj) {
                   if (obj[key].list && Array.isArray(obj[key].list)) {
-                    // 使用 filter 方法创建一个新的数组，排除掉包含目标消息标识的对象
-                    const newList = obj[key].list.filter(item => {
-                      const itemIds = Array.isArray(item.rand)
-                        ? item.rand.map(id => String(id))
-                        : item.rand !== undefined && item.rand !== null
-                          ? [String(item.rand)]
-                          : []
-                      logger.info(`[表情删除] 检查表情 ${key}, itemIds: ${JSON.stringify(itemIds)}`)
-                      if (targetIds.some(id => itemIds.includes(id))) {
+                // 使用 filter 方法创建一个新的数组，排除掉包含目标 rand 值的对象
+                const newList = obj[key].list.filter(item => {
+                  if (item.rand && item.rand.includes(targetRand)) {
                         foundAndDeleted = true;
                         if(item?.imageFile){
                             //logger.info(item.imageFile)
                             try {
                                 fs.unlinkSync(item.imageFile)
-                            } catch (error) {
-                                logger.error(error)
-                            }
-                        }
-                        if(item?.videoFile){
-                            //logger.info(item.videoFile)
-                            try {
-                                fs.unlinkSync(item.videoFile)
                             } catch (error) {
                                 logger.error(error)
                             }
@@ -474,10 +324,7 @@ export class San_AddFace extends plugin {
                     await tool.JsonWrite(obj,faceFile)
                     e.reply('已删除该项表情')
                 }
-            } catch (error) {
-                logger.error(error)
-                e.reply('删除表情失败，请稍后再试')
-            }
+
 
          }
 
@@ -678,24 +525,7 @@ export class San_AddFace extends plugin {
 
         //以下为other消息的处理
         if (matchType == "other") {
-            // 处理语音消息路径
-            let msgToSend = face.msg
-            if (Array.isArray(msgToSend)) {
-                msgToSend = msgToSend.map(item => {
-                    if (item.type === "record") {
-                        let newItem = { ...item }
-                        if (newItem.file && !path.isAbsolute(newItem.file)) {
-                            newItem.file = path.resolve(newItem.file)
-                        }
-                        if (newItem.path && !path.isAbsolute(newItem.path)) {
-                            newItem.path = path.resolve(newItem.path)
-                        }
-                        return newItem
-                    }
-                    return item
-                })
-            }
-            sendmsg = await e.reply(msgToSend)
+            sendmsg = await e.reply(face.msg)
         }//other消息处理完毕  
 
         //以下为forward消息的处理
@@ -718,43 +548,23 @@ export class San_AddFace extends plugin {
         if (matchType == "video") {
             sendmsg = await e.reply(segment.video(face.videoFile))
         }//video消息处理完毕
-
-        // 获取机器人回复消息的所有ID
-        logger.info(`[表情回复] sendmsg对象: ${JSON.stringify(sendmsg)}`)
-        let replyIds = []
+         let Rand
         if(sendmsg?.data?.message_id){
-            replyIds.push(String(sendmsg.data.message_id))
+            Rand = sendmsg.data.message_id// 目标rand值
+        }else if(sendmsg?.rand){
+            Rand = sendmsg.rand// 目标rand值
         }
-        if(sendmsg?.message_id){
-            replyIds.push(String(sendmsg.message_id))
-        }
-        if(sendmsg?.rand){
-            replyIds.push(String(sendmsg.rand))
-        }
-        if(sendmsg?.real_id){
-            replyIds.push(String(sendmsg.real_id))
-        }
-        if(sendmsg?.seq){
-            replyIds.push(String(sendmsg.seq))
-        }
-        if(sendmsg?.time){
-            replyIds.push(String(sendmsg.time))
-        }
-        replyIds = [...new Set(replyIds)]
-        logger.info(`[表情回复] 机器人回复消息的ID: ${JSON.stringify(replyIds)}`)
 
         if ("rand" in face){
-            // 将新的ID添加到rand数组中
-            for(let id of replyIds){
-                if(id && !face["rand"].includes(id)){
-                    if(face["rand"].length >= 10){
-                        face["rand"].shift()
-                    }
-                    face["rand"].push(id)
-                }
-            }
+            if(face["rand"].length >= 5){
+                face["rand"].shift()
+                face["rand"].push(Rand)
+            }else{
+                face["rand"].push(Rand)
+            }   
         }else{
-            face["rand"] = replyIds
+
+            face["rand"] = [Rand]           
         }
         tool.JsonWrite(obj, faceFile)
         return false
@@ -818,32 +628,18 @@ async function HandelFace(e,tag,isglobal) {
         msgtype = e.message[0].type;//用户消息类型
     }
     let Rand//获取消息随机数
-    let messageIds = []
-    if(e.message_id !== undefined && e.message_id !== null){
-        messageIds.push(String(e.message_id))
+    if(e?.real_id){
+        //logger.info(this.e?.real_id)
+        Rand = e.message_id// 目标rand值
+    }else{
+        Rand = e.rand// 目标rand值
     }
-    if(e.rand !== undefined && e.rand !== null){
-        messageIds.push(String(e.rand))
-    }
-    if(e.real_id !== undefined && e.real_id !== null){
-        messageIds.push(String(e.real_id))
-    }
-    if(e.seq !== undefined && e.seq !== null){
-        messageIds.push(String(e.seq))
-    }
-    if(e.time !== undefined && e.time !== null){
-        messageIds.push(String(e.time))
-    }
-    messageIds = [...new Set(messageIds)]
-    logger.info(`[表情添加] 提取到的消息ID: ${JSON.stringify(messageIds)}`)
-    logger.info(`[表情添加] e.message_id=${e.message_id}, e.rand=${e.rand}, e.real_id=${e.real_id}, e.seq=${e.seq}, e.time=${e.time}`)
-    Rand = messageIds[0]
     let date = await tool.readFromJsonFile(faceFile)//获取所有表情json
     let BascialDate = {
             'user_id': e.user_id,
             'time': tool.convertTime(Date.now(), 0),
             'belong': (e.isGroup && !isglobal) ? [e.group_id] : [],//判断是否为群组消息
-            'rand': messageIds,
+            'rand': [Rand],
     }
 
     //对iamge类型消息处理
@@ -852,17 +648,16 @@ async function HandelFace(e,tag,isglobal) {
         BascialDate.url = e.message[0].url//添加图片链接,腾讯图链似乎一段时间后会过期
         //image下载至本地
         let imageFile = `./data/San/face/images/${tool.getId()}.gif`//构造表情图片id
-        await tool.downloadImage(BascialDate.url, imageFile)
+        await tool.downloadFile(BascialDate.url, imageFile)
         BascialDate.imageFile = imageFile
     }
     //对video类型消息处理
     if (msgtype == "video") {
         BascialDate.type = "video"
         let videoFile = `./data/San/face/images/${tool.getId()}.mp4`//构造视频文件id
-        let videoElem = e.message[0]
         // 确保 self_id 可用
-        if (!videoElem.self_id && e.self_id) videoElem.self_id = e.self_id
-        let ok = await tool.downloadVideo(e, videoElem, videoFile)
+        if (!e.message[0].self_id && e.self_id) e.message[0].self_id = e.self_id
+        let ok = await tool.downloadVideo(e,videoFile)
         if (!ok) {
             e.reply(`- ${tag} -视频下载失败`)
             return
@@ -877,22 +672,13 @@ async function HandelFace(e,tag,isglobal) {
         BascialDate.type = "forward"//非iamge消息存源码
         BascialDate.msg = data//存消息数组 未进行制作合并转发
     }
-    //对非iamge类型消息处理
+    //对其他类型消息处理
     if (msgtype !== "image" && msgtype !== "video" && msgtype !== "forward" && msgtype !== "json") {
         for(let i of e.message){
             if(i.type == "image"){
             let imageFile = `./data/San/face/images/${tool.getId()}.gif`//构造表情图片id
-            await tool.downloadImage(i.url, imageFile)
+            await tool.downloadFile(i.url, imageFile)
             i.file = imageFile
-            }
-            // 处理语音消息，将路径转换为绝对路径
-            if(i.type == "record"){
-                if(i.file && !path.isAbsolute(i.file)){
-                    i.file = path.resolve(i.file)
-                }
-                if(i.path && !path.isAbsolute(i.path)){
-                    i.path = path.resolve(i.path)
-                }
             }
         }
         BascialDate.type = "other"//非iamge消息存源码

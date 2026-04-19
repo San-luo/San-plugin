@@ -7,7 +7,6 @@ import puppeteer from 'puppeteer';
 import axios from 'axios';
 import common from '../../../lib/common/common.js';
 import config from '../../../lib/config/config.js'
-import * as Packet from './Packet.js'
 
 /**
  * 获取主人qq号
@@ -319,13 +318,13 @@ export async function readFromJsonFile(filePath,create = false) {
 
 
 /**
- * 这是一个异步下载图片的函数。它使用axios库发送GET请求获取图片流，然后通过Node.js的文件系统(fs)模块将该流写入指定的目标路径。
- *
- * @param {String} url - 需要下载的图片的URL地址。
- * @param {String} targetPath - 图片保存的目标路径。
- * @return {Promise} 返回一个Promise对象，当图片成功下载并保存到指定路径时，Promise将被resolve；如果在下载或保存过程中发生错误，Promise将被reject。
+ * 这是一个异步下载文件的函数。它使用axios库发送GET请求获取文件流，然后通过Node.js的文件系统(fs)模块将该流写入指定的目标路径。
+ * 
+ * @param {String} url - 需要下载的文件的URL地址。
+ * @param {String} targetPath - 文件保存的目标路径。
+ * @return {Promise} 返回一个Promise对象，当文件成功下载并保存到指定路径时，Promise将被resolve；如果在下载或保存过程中发生错误，Promise将被reject。
  */
-export async function downloadImage(url, targetPath) {
+export async function downloadFile(url, targetPath) {
   try {
     const response = await axios({
       url,
@@ -481,6 +480,10 @@ export async function getsource(e, img = false) {
     }
 }
 
+if(source?.message[0]?.text == "你的QQ暂不支持查看视频短片，请期待后续版本。"){
+  source.message.shift()
+}
+
   return source
 }
 
@@ -605,7 +608,7 @@ export async function getFMsg(e){
         for(let i of item.message){
           if(i.type == "image"){
             let imageFile = `./data/San/face/images/${getId()}.gif`//构造表情图片id
-            await downloadImage(i.data.url, imageFile)
+            await downloadFile(i.data.url, imageFile)
             i.data.file = imageFile
           }
         }
@@ -629,7 +632,7 @@ export async function getFMsg(e){
       for(let i of item.message){
         if(i.type == "image"){
           let imageFile = `./data/San/face/images/${getId()}.gif`//构造表情图片id
-          await downloadImage(i.url, imageFile)
+          await downloadFile(i.url, imageFile)
           i.file = imageFile
         }
       }
@@ -645,99 +648,28 @@ export async function getFMsg(e){
   return false
 }
 
-export async function downloadVideo(e, videoElem, targetPath) {
-  try {
-    logger.info(`[San-plugin] 视频元素: type=${videoElem.type}, url=${videoElem.url}, file=${videoElem.file?.substring(0,50)}`)
-
+export async function downloadVideo(e,targetPath) {
     // 方案1: NapCat/OneBot - 直接使用 url 字段
-    if (videoElem.url) {
+    if (e.message?.url) {
       logger.info(`[San-plugin] 使用 NapCat/OneBot url 下载`)
-      await common.downFile(videoElem.url, targetPath)
+      await common.downFile(e.message[0].url, targetPath)
       logger.info(`[San-plugin] 视频下载完成: ${targetPath}`)
       return true
     }
 
-    // 方案2: ICQQ 协议 - 使用 Packet 方法获取下载链接（需要 Bili-Plugin）
-    const botId = videoElem.self_id || e.self_id || Object.keys(Bot)[0]
-    const bot = Bot[botId]
-
-    if (bot?.icqq || bot?.adapter?.name === 'ICQQ') {
-      // 提取 fid
-      let fid = videoElem.fid
-
-      if (!fid) {
-        logger.error('[San-plugin] 视频消息缺少 fid 字段')
-        return false
-      }
-
-      logger.info(`[San-plugin] 使用 Packet 方法获取视频链接, fid: ${fid}`)
-
-      try {
-        // 构造请求 body（参考 Bili-Plugin/apps/Getrecordvideo.js）
-        const body = {
-          1: {
-            1: {
-              1: 1,
-              2: 200,
-            },
-            2: {
-              101: 2,
-              102: 2,
-              200: 2,
-              202: {
-                1: e.group_id,
-              },
-            },
-            3: {
-              1: 2,
-            },
-          },
-          3: {
-            1: {
-              2: fid,
-              3: 1,
-            },
-            2: {
-              2: {},
-            },
-          },
-        }
-
-        // 调用 Packet 方法获取视频下载链接
-        const rsp = await Packet.sendOidbSvcTrpcTcp(e, 'OidbSvcTrpcTcp.0x11EA_200', body)
-        const rkey = rsp[3][1]
-
-        if (!rkey) {
-          logger.error('[San-plugin] 获取视频 rkey 失败')
-          return false
-        }
-
-        // 构造下载 URL
-        const videoUrl = `https://${rsp[3][3][1]}${rsp[3][3][2]}${rkey}`
-        logger.info(`[San-plugin] 获取到视频下载链接: ${videoUrl}`)
-
-        // 下载视频
-        await common.downFile(videoUrl, targetPath)
-        logger.info(`[San-plugin] 视频下载完成: ${targetPath}`)
-        return true
-      } catch (err) {
-        logger.error('[San-plugin] Packet 方法获取视频链接失败:', err?.message || err)
-        return false
-      }
+    // 方案2: ICQQ 协议 - 使用发包获取下载链接
+    if (Bot?.icqq || Bot?.adapter?.name === 'ICQQ') {
+    const body = {
+      1: { 1: { 1: 1, 2: 200 }, 2: { 101: 2, 102: 2, 200: 2, 202: { 1: e.group_id } }, 3: { 1: 2 } },
+      3: { 1: { 2: e.message[0].fid, 3: 1 }, 2: { 2: {} } },
     }
+    const rsp = await Bot.sendOidbSvcTrpcTcp('OidbSvcTrpcTcp.0x11EA_200', body)
+    const url = `https://${rsp[3][3][1]}${rsp[3][3][2]}${rsp[3][1]}`
+    logger.info(`[San-plugin] 使用发包下载`)
+     await downloadFile(url, targetPath)
+    logger.info(`[San-plugin] 视频下载完成: ${targetPath}`)
+    return true
 
-    // 方案3: 尝试使用 file 字段作为 URL
-    if (videoElem.file && String(videoElem.file).startsWith('http')) {
-      logger.info(`[San-plugin] 使用 file 字段作为 URL 下载`)
-      await Bot.download(videoElem.file, targetPath)
-      logger.info(`[San-plugin] 视频下载完成: ${targetPath}`)
-      return true
     }
-
-    logger.error('[San-plugin] 视频消息缺少 url 或 file 字段，无法下载')
-    return false
-  } catch (error) {
-    logger.error('[San-plugin] downloadVideo错误:', error?.message || error)
-    return false
-  }
 }
+

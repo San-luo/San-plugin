@@ -11,7 +11,9 @@ logger.info('-------------------------');
 
 //___初始化必要路径___
 const initPath = [
-  './plugins/San-plugin/resources/poke/api.yaml'
+  './plugins/San-plugin/resources/poke/api.yaml',
+  "./data/San/face",
+  "./data/San/face/images"
 ]
 for(let item of initPath){
   tool.checkPath(item)
