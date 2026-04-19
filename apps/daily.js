@@ -117,20 +117,23 @@ export class daily extends plugin {
         }
     }
     async daily(e) {
-        const groups = loadWhiteList();
-        if (groups.length > 0 && !groups.includes(e.group_id)) {
-            return false;
-        }
-
         try {
+            logger.info(`[日报] 开始请求API: ${daily_url}`)
             const response = await fetch(daily_url)
             if (!response.ok) throw new Error(`HTTP错误: ${response.status}`);
             const data = await response.json()
-            let base64 = data[`data`].base64
-            e.reply(segment.image(`base64://${base64}`))
+
+            if (!data.data || !data.data.base64) {
+                throw new Error('API返回数据格式错误')
+            }
+
+            let base64 = data.data.base64
+            logger.info(`[日报] 获取到base64数据，长度: ${base64.length}`)
+            await e.reply(segment.image(`base64://${base64}`))
+            logger.info(`[日报] 图片发送完成`)
         } catch(error) {
-            logger.error(`请求异常:${error}`)
-            e.reply(`日报请求异常`)
+            logger.error(`[日报] 请求异常: ${error}`)
+            e.reply(`日报请求异常: ${error.message}`)
         }
         return true;
     }
@@ -152,7 +155,12 @@ export class daily extends plugin {
             const response = await fetch(daily_url)
             if (!response.ok) throw new Error(`HTTP错误: ${response.status}`);
             const data = await response.json()
-            let base64 = data[`data`].base64
+
+            if (!data.data || !data.data.base64) {
+                throw new Error('API返回数据格式错误')
+            }
+
+            let base64 = data.data.base64
 
             // 向所有白名单群发送
             for (const groupId of groups) {
