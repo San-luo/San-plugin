@@ -678,7 +678,24 @@ export class San_AddFace extends plugin {
 
         //以下为other消息的处理
         if (matchType == "other") {
-            sendmsg = await e.reply(face.msg)
+            // 处理语音消息路径
+            let msgToSend = face.msg
+            if (Array.isArray(msgToSend)) {
+                msgToSend = msgToSend.map(item => {
+                    if (item.type === "record") {
+                        let newItem = { ...item }
+                        if (newItem.file && !path.isAbsolute(newItem.file)) {
+                            newItem.file = path.resolve(newItem.file)
+                        }
+                        if (newItem.path && !path.isAbsolute(newItem.path)) {
+                            newItem.path = path.resolve(newItem.path)
+                        }
+                        return newItem
+                    }
+                    return item
+                })
+            }
+            sendmsg = await e.reply(msgToSend)
         }//other消息处理完毕  
 
         //以下为forward消息的处理
@@ -867,6 +884,15 @@ async function HandelFace(e,tag,isglobal) {
             let imageFile = `./data/San/face/images/${tool.getId()}.gif`//构造表情图片id
             await tool.downloadImage(i.url, imageFile)
             i.file = imageFile
+            }
+            // 处理语音消息，将路径转换为绝对路径
+            if(i.type == "record"){
+                if(i.file && !path.isAbsolute(i.file)){
+                    i.file = path.resolve(i.file)
+                }
+                if(i.path && !path.isAbsolute(i.path)){
+                    i.path = path.resolve(i.path)
+                }
             }
         }
         BascialDate.type = "other"//非iamge消息存源码
