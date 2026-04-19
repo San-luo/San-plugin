@@ -67,11 +67,6 @@ export class daily extends plugin {
                     fnc: 'daily'
                 },
                 {
-                    reg: '^#绫华日报定时(.+)$',
-                    fnc: 'setCron',
-                    permission: 'master'
-                },
-                {
                     reg: '^#日报开启白名单$',
                     fnc: 'enableWhiteList',
                     permission: 'master'
@@ -171,21 +166,6 @@ export class daily extends plugin {
         } catch(error) {
             logger.error(`日报定时推送异常:${error}`)
         }
-    }
-
-    async setCron(e) {
-        const groups = loadWhiteList();
-        if (groups.length > 0 && !groups.includes(e.group_id)) {
-            return false;
-        }
-
-        const match = e.msg.match(/^#绫华日报定时(.+)$/)
-        if (!match) return false
-
-        const time = match[1].trim()
-        saveCronTime(time)
-        await e.reply(`✅ 日报已更改成${time}推送`)
-        return true
     }
 
     async enableWhiteList(e) {
