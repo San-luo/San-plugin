@@ -87,7 +87,7 @@ export class daily extends plugin {
         // 定时任务：每分钟检查一次
         this.task = {
             name: '绫华日报定时',
-            fnc: () => this.cronDaily(),
+            fnc: this.cronDaily.bind(this),
             cron: '0 * * * * ?'
         }
     }
