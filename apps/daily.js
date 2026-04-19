@@ -90,6 +90,36 @@ export class daily extends plugin {
             fnc: this.cronDaily.bind(this),
             cron: '0 * * * * ?'
         }
+
+        // 监听配置文件变化
+        this.watchConfigFile()
+    }
+
+    // 监听配置文件变化
+    watchConfigFile() {
+        try {
+            // 确保目录存在
+            const dir = path.dirname(configPath)
+            if (!fs.existsSync(dir)) {
+                fs.mkdirSync(dir, { recursive: true })
+            }
+
+            // 监听配置文件
+            fs.watch(configPath, (eventType, filename) => {
+                if (eventType === 'change') {
+                    logger.info('[日报定时] 检测到配置文件变化，已重新加载')
+                }
+            })
+
+            // 监听白名单文件
+            fs.watch(whiteListPath, (eventType, filename) => {
+                if (eventType === 'change') {
+                    logger.info('[日报白名单] 检测到白名单文件变化，已重新加载')
+                }
+            })
+        } catch (e) {
+            logger.error('[日报] 文件监听启动失败:', e)
+        }
     }
     async daily(e) {
         const groups = loadWhiteList();
