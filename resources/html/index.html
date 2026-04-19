@@ -4,209 +4,301 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        :root {
+            /* 顶级玻璃态配色方案 */
+            --glass-bg: rgba(10, 10, 10, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --accent-color: #00f2fe;
+            --accent-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --inner-glow: inset 0 0 15px rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'SF Pro Display', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            height: 100vh;
-            margin: 0;
-            background-image: url('../img/background.jpg'); /* 页面背景图 */
+            min-height: 100vh;
+            /* 背景图支持 */
+            background-image: url('../img/background.jpg');
             background-repeat: no-repeat;
-            background-size: cover; /* 自动调整图像大小以适应整个页面 */
+            background-size: cover;
             background-position: center;
+            background-attachment: fixed;
+            color: var(--text-primary);
         }
+
+        /* 背景深度遮罩 */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%);
+            z-index: -1;
+        }
+
         .container {
-            width: 80%;
-            max-width: 800px;
-            text-align: center;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(5px); /* 增强毛玻璃效果 */
-            background-color: rgba(255, 255, 255, 0.1); /* 增加透明度 */
-        }
-        .table-container {
+            width: 95%;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 35px 45px; /* 适中的内边距 */
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px) saturate(170%);
+            -webkit-backdrop-filter: blur(25px) saturate(170%);
+            border: 1px solid var(--glass-border);
+            border-radius: 35px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
             position: relative;
-            width: 100%;
             overflow: hidden;
-            margin-bottom: 10px; /* 减少大表格之间的间距 */
-            border: 1px solid #ddd; /* 添加边框 */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
-            backdrop-filter: blur(5px); /* 增强毛玻璃效果 */
-            background-color: rgba(255, 255, 255, 0.1); /* 增加透明度 */
         }
-        h1 {
-            margin-bottom: 20px;
-            position: relative;
-            z-index: 1;
-            font-size: 24px;
-            color: #333;
-        }
-        h2 {
-            margin-top: 10px;
-            margin-bottom: 10px;
-            font-size: 16px; /* 减小功能组标题字体大小 */
-            color: #333;
-            position: relative;
-            z-index: 1;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            z-index: 1;
-            position: relative;
-            backdrop-filter: blur(5px); /* 增强毛玻璃效果 */
-            background-color: rgba(255, 255, 255, 0.1); /* 增加透明度 */
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
+
+        header {
             text-align: center;
-            vertical-align: top;
-            font-size: 12px; /* 减小字体大小 */
+            margin-bottom: 35px;
         }
-        .feature-name {
-            font-size: 12px; /* 减小功能名称字体大小 */
-            font-weight: bold;
+
+        h1 {
+            font-size: 56px;
+            font-weight: 900;
+            margin: 0;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            background: linear-gradient(to bottom, #fff 40%, #bbb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .feature-description {
-            font-size: 10px; /* 减小功能描述字体大小 */
-            color: #555;
+
+        .subtitle-box {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 4px 18px;
+            border-radius: 50px;
+            background: var(--accent-gradient);
+            color: #000;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 2px;
         }
-        .empty-cell {
-            background-color: rgba(255, 255, 255, 0.2); /* 增加透明度 */
+
+        .section {
+            margin-bottom: 35px;
         }
-        .footer {
-            margin-top: 20px;
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-indicator {
+            width: 10px;
+            height: 10px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            margin-right: 12px;
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 1px;
             position: relative;
-            z-index: 1;
-            backdrop-filter: blur(5px); /* 增强毛玻璃效果 */
-            background-color: rgba(255, 255, 255, 0.1); /* 增加透明度 */
-            font-size: 12px; /* 减小字体大小 */
+        }
+
+        /* 强制 3 列布局 */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 15px; 
+        }
+
+        .card {
+            background: var(--card-bg);
+            box-shadow: var(--inner-glow);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 18px;
+            padding: 16px 20px; /* 深度压缩高度 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* 顶部装饰微线 */
+        .card::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 20%; right: 20%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+        }
+
+        .feature-command {
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-size: 15px;
+            color: var(--accent-color);
+            font-weight: 700;
+            margin-bottom: 6px;
+            line-height: 1.3;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .feature-command::before {
+            content: ">";
+            margin-right: 6px;
+            opacity: 0.4;
+        }
+
+        .feature-desc {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-content {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 1px;
+        }
+
+        .footer-tag {
+            color: var(--text-primary);
+            font-weight: 700;
+            background: rgba(255,255,255,0.1);
+            padding: 3px 10px;
+            border-radius: 5px;
+            margin-left: 5px;
+        }
+
+        /* 为了确保截图效果，900px 以下才降级为 2 列 */
+        @media (max-width: 900px) {
+            .grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
-    <title>San-plugin</title>
+    <title>San-plugin Help Center Compact</title>
 </head>
 <body>
 
 <div class="container">
-    <h1>San-plugin</h1>
+    <header>
+        <h1>SAN PLUGIN</h1>
+        <div class="subtitle-box">COMMAND REFERENCE</div>
+    </header>
 
-    <div id="tablesContainer"></div>
+    <div id="contentWrapper"></div>
 
-    <div class="footer">Created by San-plugin @散San</div>
+    <footer>
+        <div class="footer-content">
+            POWERED BY <span class="footer-tag">@散San</span>
+        </div>
+    </footer>
 </div>
 
 <script>
-    // 插件帮助数据对象数组
+    // 数据保持简洁，适配 3 列展示
     const pluginHelpData = [
         {
-            title: "---------表情添加---------",
+            title: "表情系统",
             features: [
-                ["#san设置表情添加开启(关闭)", "开启(关闭)表情添加功能,重启生效"],
-                ["#san设置表情添加仅主人开启(关闭)", "开启后仅有主人可添加表情"],
-                ["#san设置表情群组分离开启(关闭)", "开启后仅有全局表情和对应群组的表情可触发"],
-                ["#添加xxx", "添加随机关键词回复"],
-                ["#表情列表", "查看添加的所有表情及数量"],
-                ["#来点xxx", "随机回复10张此关键词表情"],
-                ["#连续添加xxx", "连续添加随机关键词回复,结束请发#结束添加"],
-                ["#表情删除", "需引用bot所发表情,删除对应单项表情"],
-                ["#表情删除全部项xxx", "删除指定关键词对应的全部表情,仅主人可用"]
+                ["#san设置表情添加开启", "开启表情添加功能,重启生效"],
+                ["#san设置主人添加", "开启后仅有主人可添加表情"],
+                ["#san设置群组分离", "仅触发全局和对应群组表情"],
+                ["#添加xxx", "添加随机关键词回复内容"],
+                ["#表情列表", "查看所有表情及具体数量"],
+                ["#来点xxx", "随机回复10张关键词表情"],
+                ["#连续添加xxx", "进入连续添加模式,发#退出"],
+                ["#表情删除", "需引用bot所发表情进行删除"],
+                ["#表情删除全部xxx", "删除指定关键词全部数据"]
             ]
         },
         {
-            title: "---------气象信息---------",
+            title: "气象服务",
             features: [
-                ["xxx天气", "获取天气卡片,支持模糊关键词"],
-                ["极端天气", "查看当前极端天气地区"],
-                ["xxx空气", "获取空气质量卡片,支持模糊关键词"],
-                ["xxx空气排行", "可查看此地区的空气质量排行"],
+                ["xxx天气", "实时天气卡片,支持模糊匹配"],
+                ["极端天气", "查看全国范围内的预警地区"],
+                ["xxx空气", "实时空气质量卡片数据"],
+                ["xxx空气排行", "查看对应地区的质量排行"]
             ]
         },
         {
-            title: "---------戳一戳---------",
+            title: "交互体验",
             features: [
-                ["#san设置戳一戳仅bot(开启|关闭)", "开启后仅有戳bot才可触发戳一戳"],
-                ["#戳一戳(开启|关闭|全部)列表", "查看(开启|关闭|全部)的api列表"],
-                ["#戳一戳设置名称 api", "添加戳一戳api,添加默认开启 注意存在空格"],
-                ["#戳一戳全部(开启|关闭)", "(开启|关闭)全部戳一戳api"],
-                ["#戳一戳(开启|关闭)xxx", "开启关闭指定api"],
-                ["#戳一戳全部删除", "删除全部api 慎重使用"],
-                ["#戳一戳删除xxx", "删除指定api"],
+                ["#san戳一戳仅bot", "仅有戳bot才可触发反馈"],
+                ["#戳一戳列表", "查看API生效状态列表"],
+                ["#戳一戳设置名称 api", "添加自定义戳一戳API路径"],
+                ["#戳一戳全部开启", "一键控制所有API生效状态"],
+                ["#戳一戳关闭xxx", "针对特定API进行关闭操作"],
+                ["#戳一戳全部删除", "清空数据库中所有API配置"]
             ]
         },
         {
-            title: "---------其他小功能---------",
+            title: "实用工具",
             features: [
-                ["#去背景", "获取去除背景后的图像"],
-                ["#留言", "可向bot主人留言"],
-                ["取", "需引用消息,发送引用消息的e实例"],
-                ["#日报", "获取每日60秒读懂世界"],
-                ["#日报开启白名单", "将当前群加入日报推送白名单(仅主人)"],
-                ["#日报关闭白名单", "将当前群移出日报推送白名单(仅主人)"]
+                ["#去背景", "获取AI去背后的透明图像"],
+                ["#留言", "可向Bot管理员发送留言"],
+                ["取", "引用消息获取 e 实例内容"],
+                ["#日报", "获取每日60秒新闻简报"],
+                ["#日报开启白名单", "将当前群加入推送(主人)"]
             ]
         },
         {
-            title: "---------其他设置类---------",
+            title: "核心配置",
             features: [
-                ["#san设置", "查看San插件的设置信息"],
-                ["#san设置图像质量100", "设置图像生成质量,范围为1-100"],
-                ["#san(强制)更新", "更新San插件,报错请强制更新"]
+                ["#san设置", "查看详细运行配置信息"],
+                ["#san设置图像质量", "设置生成图像质量 (1-100)"],
+                ["#san更新", "从仓库拉取最新插件版本"]
             ]
         }
     ];
 
-    // 创建表格函数
-    function createTable(data) {
-        const tablesContainer = document.getElementById('tablesContainer');
+    function renderHelp() {
+        const wrapper = document.getElementById('contentWrapper');
+        pluginHelpData.forEach(sectionData => {
+            const section = document.createElement('div');
+            section.className = 'section';
+            
+            const header = document.createElement('div');
+            header.className = 'section-header';
+            header.innerHTML = `<div class="section-indicator"></div><div class="section-title">${sectionData.title}</div>`;
+            section.appendChild(header);
 
-        data.forEach(group => {
-            const tableContainer = document.createElement('div');
-            tableContainer.className = 'table-container';
-
-            const groupTitle = document.createElement('h2');
-            groupTitle.textContent = group.title;
-
-            const table = document.createElement('table');
-            let row;
-
-            group.features.forEach((feature, index) => {
-                if (index % 4 === 0) {
-                    row = table.insertRow(); // 每4个单元格开始新的一行
-                }
-                const cell = row.insertCell();
-                const featureName = document.createElement('div');
-                featureName.className = 'feature-name';
-                featureName.textContent = feature[0]; // 插入功能名称
-                
-                const featureDescription = document.createElement('div');
-                featureDescription.className = 'feature-description';
-                featureDescription.textContent = feature[1]; // 插入功能描述
-                
-                cell.appendChild(featureName);
-                cell.appendChild(featureDescription);
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+            sectionData.features.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="feature-command">${item[0]}</div>
+                    <div class="feature-desc">${item[1]}</div>
+                `;
+                grid.appendChild(card);
             });
-
-            // 如果最后一行不满4个单元格，则用空单元格填充
-            while (row && row.cells.length < 4) {
-                const emptyCell = row.insertCell();
-                emptyCell.className = 'empty-cell'; // 设置空单元格样式
-            }
-
-            tableContainer.appendChild(groupTitle);
-            tableContainer.appendChild(table);
-
-            tablesContainer.appendChild(tableContainer);
+            section.appendChild(grid);
+            wrapper.appendChild(section);
         });
     }
-
-    createTable(pluginHelpData); // 调用创建表格函数
+    window.onload = renderHelp;
 </script>
-
 </body>
 </html>
-
-
-
