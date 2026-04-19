@@ -1,6 +1,7 @@
 import path from 'path'
 import lodash from 'lodash'
 import * as tool from './models/tool.js';
+import fs from 'fs';
 
 // 支持锅巴
 export function supportGuoba () {
@@ -70,6 +71,29 @@ export function supportGuoba () {
             required: true,
             componentProps: {
                 placeholder: '请输入日报接口url'
+            }
+        },
+        {
+            field: 'daily.time',
+            label: '日报定时推送时间',
+            helpMessage: '每天定时推送日报的时间',
+            bottomHelpMessage: '格式：HH:MM，例如 07:00 表示每天早上7点推送',
+            component: 'Input',
+            required: false,
+            componentProps: {
+                placeholder: '例如：07:00'
+            }
+        },
+        {
+            field: 'daily.whitelist',
+            label: '日报白名单群',
+            helpMessage: '接收日报推送的群号列表',
+            bottomHelpMessage: '多个群号用英文逗号分隔，例如：123456789,987654321',
+            component: 'InputTextArea',
+            required: false,
+            componentProps: {
+                placeholder: '请输入群号，多个用逗号分隔',
+                rows: 3
             }
         },
         {
@@ -207,8 +231,37 @@ export function supportGuoba () {
             priority: await tool.readyaml('./plugins/San-plugin/config/priority.yaml') ,
             poke: {
                 List: []
+            },
+            daily: {
+                time: '7:00',
+                whitelist: ''
             }
         }
+
+        // 读取日报定时配置
+        try {
+            const dailyCronPath = './plugins/San-plugin/data/daily_cron.json'
+            if (fs.existsSync(dailyCronPath)) {
+                const cronData = await tool.readFromJsonFile(dailyCronPath)
+                data.daily.time = cronData.time || '7:00'
+            }
+        } catch (e) {
+            logger.error('[锅巴] 读取日报定时配置失败:', e)
+        }
+
+        // 读取日报白名单
+        try {
+            const whitelistPath = './plugins/San-plugin/data/daily_whitelist.json'
+            if (fs.existsSync(whitelistPath)) {
+                const whitelistData = await tool.readFromJsonFile(whitelistPath)
+                if (whitelistData.groups && Array.isArray(whitelistData.groups)) {
+                    data.daily.whitelist = whitelistData.groups.join(',')
+                }
+            }
+        } catch (e) {
+            logger.error('[锅巴] 读取日报白名单失败:', e)
+        }
+
         let pokeapi = await tool.readyaml('./plugins/San-plugin/resources/poke/api.yaml')
         //logger.info(pokeapi)
         let list = data.poke.List
@@ -247,10 +300,40 @@ export function supportGuoba () {
             tool.objectToYamlFile(NewData.config,'./plugins/San-plugin/config/config.yaml')
             tool.objectToYamlFile(NewData.priority,'./plugins/San-plugin/config/priority.yaml')
             tool.objectToYamlFile(pokeData,'./plugins/San-plugin/resources/poke/api.yaml')
-            return Result.ok({}, '保存成功~')    
+
+            // 保存日报定时配置
+            if (NewData.daily && NewData.daily.time) {
+                const dailyCronPath = './plugins/San-plugin/data/daily_cron.json'
+                const dir = path.dirname(dailyCronPath)
+                if (!fs.existsSync(dir)) {
+                    fs.mkdirSync(dir, { recursive: true })
+                }
+                fs.writeFileSync(dailyCronPath, JSON.stringify({ time: NewData.daily.time }, null, 2))
+            }
+
+            // 保存日报白名单
+            if (NewData.daily && NewData.daily.whitelist !== undefined) {
+                const whitelistPath = './plugins/San-plugin/data/daily_whitelist.json'
+                const dir = path.dirname(whitelistPath)
+                if (!fs.existsSync(dir)) {
+                    fs.mkdirSync(dir, { recursive: true })
+                }
+                // 将逗号分隔的字符串转换为数组
+                let groups = []
+                if (NewData.daily.whitelist && NewData.daily.whitelist.trim()) {
+                    groups = NewData.daily.whitelist.split(',')
+                        .map(g => g.trim())
+                        .filter(g => g)
+                        .map(g => Number(g))
+                        .filter(g => !isNaN(g))
+                }
+                fs.writeFileSync(whitelistPath, JSON.stringify({ groups }, null, 2))
+            }
+
+            return Result.ok({}, '保存成功~')
         } catch (error) {
             logger.error(error)
-            return Result.ok({}, '出现错误,请查看控制台日志~')  
+            return Result.ok({}, '出现错误,请查看控制台日志~')
         }
 
       }
