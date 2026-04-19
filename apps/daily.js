@@ -131,7 +131,12 @@ export class daily extends plugin {
 
             // 向所有白名单群发送
             for (const groupId of groups) {
-                Bot.pickGroup(groupId).sendMsg(segment.image(`base64://${base64}`))
+                try {
+                    await Bot.pickGroup(groupId).sendMsg(segment.image(`base64://${base64}`))
+                    logger.info(`[日报定时] 成功发送到群 ${groupId}`)
+                } catch (err) {
+                    logger.error(`[日报定时] 发送到群 ${groupId} 失败: ${err}`)
+                }
             }
         } catch(error) {
             logger.error(`日报定时推送异常:${error}`)
