@@ -650,7 +650,7 @@ export async function getFMsg(e){
 
 export async function downloadVideo(e,targetPath) {
     // 方案1: NapCat/OneBot - 直接使用 url 字段
-    if (e.message?.url) {
+    if (e.message[0]?.url) {
       logger.info(`[San-plugin] 使用 NapCat/OneBot url 下载`)
       await common.downFile(e.message[0].url, targetPath)
       logger.info(`[San-plugin] 视频下载完成: ${targetPath}`)
