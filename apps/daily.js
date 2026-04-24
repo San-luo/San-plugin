@@ -270,7 +270,7 @@ export class daily extends plugin {
         const input = match[1]
         const source = (input === '2' || input === '腾讯云' || input === 'tencent') ? 'tencent' : 'cdn'
         await setDailyApiSource(source)
-        await e.reply(`✅ 日报API已切换为${source === 'cdn' ? 'CDN(1)' : '腾讯云(2)'}`)
+        await e.reply(`✅ 日报API已切换为${source === 'cdn' ? 'CDN' : '腾讯云'}`)
         return true
     }
 
