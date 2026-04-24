@@ -63,14 +63,18 @@ export function supportGuoba () {
             }
         },
         {
-            field: 'config.daily_url',
-            label: '日报api配置',
-            helpMessage: '日报接口的url',
-            bottomHelpMessage: '例如https://daily.kuro.ltd/api/v1/dayNews',
-            component: 'Input',
+            field: 'config.daily_api_source',
+            label: '日报API切换',
+            helpMessage: '内置接口切换，仅支持 CDN / 腾讯云',
+            bottomHelpMessage: '选择后 #日报 和日报定时都会使用该接口',
+            component: 'Select',
             required: true,
             componentProps: {
-                placeholder: '请输入日报接口url'
+                options: [
+                    { label: 'CDN', value: 'cdn' },
+                    { label: '腾讯云', value: 'tencent' }
+                ],
+                placeholder: '请选择日报接口'
             }
         },
         {
@@ -236,6 +240,11 @@ export function supportGuoba () {
                 time: '7:00',
                 whitelist: ''
             }
+        }
+
+        // 仅允许切换内置日报 API
+        if (!['cdn', 'tencent'].includes(data.config.daily_api_source)) {
+            data.config.daily_api_source = 'cdn'
         }
 
         // 读取日报定时配置

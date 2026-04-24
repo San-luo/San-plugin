@@ -3,8 +3,80 @@ import fs from 'fs';
 import path from 'path';
 
 const cfg_priority = await tool.set_priority("daily_paper")
-const daily_url = await tool.set_otherCfg("daily_url")
 const configPath = path.join(process.cwd(), 'plugins/San-plugin/data/daily_cron.json');
+const dailyConfigPath = path.join(process.cwd(), 'plugins/San-plugin/config/config.yaml');
+
+const DAILY_APIS = {
+    cdn: 'https://daily.kuro.ltd/api/v1/dayNews',
+    tencent: 'http://43.139.184.14:55608/api/v1/dayNews'
+}
+
+let currentDailyApiSource = 'cdn'
+
+function normalizeDailyApiSource(source) {
+    if (source === 'api1') return 'cdn'
+    if (source === 'api2') return 'tencent'
+    return ['cdn', 'tencent'].includes(source) ? source : 'cdn'
+}
+
+async function reloadDailyApiSourceFromFile() {
+    const cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
+    const nextSource = normalizeDailyApiSource(cfg?.daily_api_source)
+    if (nextSource !== currentDailyApiSource) {
+        currentDailyApiSource = nextSource
+        logger.info(`[日报] 热加载API源: ${currentDailyApiSource}`)
+    }
+}
+
+async function getDailyApiSource() {
+    return currentDailyApiSource
+}
+
+async function setDailyApiSource(source) {
+    const nextSource = normalizeDailyApiSource(source)
+    const prevSource = currentDailyApiSource
+    currentDailyApiSource = nextSource
+
+    try {
+        const cfg = await tool.readyaml('./plugins/San-plugin/config/config.yaml')
+        cfg.daily_api_source = nextSource
+        await tool.objectToYamlFile(cfg, './plugins/San-plugin/config/config.yaml')
+    } catch (error) {
+        currentDailyApiSource = prevSource
+        throw error
+    }
+}
+
+await reloadDailyApiSourceFromFile()
+
+async function fetchDailyData() {
+    const source = await getDailyApiSource()
+    const current = { name: source, url: DAILY_APIS[source] }
+    const fallbackName = source === 'cdn' ? 'tencent' : 'cdn'
+    const fallback = { name: fallbackName, url: DAILY_APIS[fallbackName] }
+
+    let lastError = null
+
+    for (const api of [current, fallback]) {
+        try {
+            logger.info(`[日报] 尝试API(${api.name}): ${api.url}`)
+            const response = await fetch(api.url)
+            if (!response.ok) throw new Error(`HTTP错误: ${response.status}`)
+
+            const data = await response.json()
+            if (!data.data || !data.data.base64) {
+                throw new Error('API返回数据格式错误')
+            }
+
+            return { apiName: api.name, data }
+        } catch (error) {
+            lastError = error
+            logger.error(`[日报] API(${api.name})请求失败: ${error.message}`)
+        }
+    }
+
+    throw lastError || new Error('所有日报API均不可用')
+}
 
 // 白名单群列表（从文件读取）
 const Whitelist = [];
@@ -67,6 +139,11 @@ export class daily extends plugin {
                     fnc: 'daily'
                 },
                 {
+                    reg: '^#(?:日报api(?:切换)?|切换日报api)\\s*(1|2|cdn|腾讯云|tencent)$',
+                    fnc: 'switchDailyApi',
+                    permission: 'master'
+                },
+                {
                     reg: '^#日报开启白名单$',
                     fnc: 'enableWhiteList',
                     permission: 'master'
@@ -94,22 +171,43 @@ export class daily extends plugin {
     watchConfigFile() {
         try {
             // 确保目录存在
-            const dir = path.dirname(configPath)
-            if (!fs.existsSync(dir)) {
-                fs.mkdirSync(dir, { recursive: true })
+            const cronDir = path.dirname(configPath)
+            if (!fs.existsSync(cronDir)) {
+                fs.mkdirSync(cronDir, { recursive: true })
             }
 
-            // 监听配置文件
-            fs.watch(configPath, (eventType, filename) => {
+            const whiteListDir = path.dirname(whiteListPath)
+            if (!fs.existsSync(whiteListDir)) {
+                fs.mkdirSync(whiteListDir, { recursive: true })
+            }
+
+            const dailyCfgDir = path.dirname(dailyConfigPath)
+            if (!fs.existsSync(dailyCfgDir)) {
+                fs.mkdirSync(dailyCfgDir, { recursive: true })
+            }
+
+            // 监听定时配置文件
+            fs.watch(configPath, (eventType) => {
                 if (eventType === 'change') {
                     logger.info('[日报定时] 检测到配置文件变化，已重新加载')
                 }
             })
 
             // 监听白名单文件
-            fs.watch(whiteListPath, (eventType, filename) => {
+            fs.watch(whiteListPath, (eventType) => {
                 if (eventType === 'change') {
                     logger.info('[日报白名单] 检测到白名单文件变化，已重新加载')
+                }
+            })
+
+            // 监听日报API配置文件（热加载）
+            fs.watch(dailyConfigPath, async (eventType) => {
+                if (eventType === 'change') {
+                    try {
+                        await reloadDailyApiSourceFromFile()
+                    } catch (err) {
+                        logger.error('[日报] 热加载API配置失败:', err)
+                    }
                 }
             })
         } catch (e) {
@@ -118,17 +216,9 @@ export class daily extends plugin {
     }
     async daily(e) {
         try {
-            logger.info(`[日报] 开始请求API: ${daily_url}`)
-            const response = await fetch(daily_url)
-            if (!response.ok) throw new Error(`HTTP错误: ${response.status}`);
-            const data = await response.json()
-
-            if (!data.data || !data.data.base64) {
-                throw new Error('API返回数据格式错误')
-            }
-
+            const { apiName, data } = await fetchDailyData()
             let base64 = data.data.base64
-            logger.info(`[日报] 获取到base64数据，长度: ${base64.length}`)
+            logger.info(`[日报] 使用API(${apiName})获取到base64，长度: ${base64.length}`)
             await e.reply(segment.image(`base64://${base64}`))
             logger.info(`[日报] 图片发送完成`)
         } catch(error) {
@@ -152,15 +242,9 @@ export class daily extends plugin {
         if (groups.length === 0) return false;
 
         try {
-            const response = await fetch(daily_url)
-            if (!response.ok) throw new Error(`HTTP错误: ${response.status}`);
-            const data = await response.json()
-
-            if (!data.data || !data.data.base64) {
-                throw new Error('API返回数据格式错误')
-            }
-
+            const { apiName, data } = await fetchDailyData()
             let base64 = data.data.base64
+            logger.info(`[日报定时] 使用API(${apiName})获取到base64，长度: ${base64.length}`)
 
             // 向所有白名单群发送
             for (const groupId of groups) {
@@ -174,6 +258,20 @@ export class daily extends plugin {
         } catch(error) {
             logger.error(`日报定时推送异常:${error}`)
         }
+    }
+
+    async switchDailyApi(e) {
+        const match = e.msg.match(/^#(?:日报api(?:切换)?|切换日报api)\s*(1|2|cdn|腾讯云|tencent)$/)
+        if (!match) {
+            await e.reply('格式错误：#切换日报api 1/2 或 #日报api切换 cdn|腾讯云')
+            return true
+        }
+
+        const input = match[1]
+        const source = (input === '2' || input === '腾讯云' || input === 'tencent') ? 'tencent' : 'cdn'
+        await setDailyApiSource(source)
+        await e.reply(`✅ 日报API已切换为${source === 'cdn' ? 'CDN(1)' : '腾讯云(2)'}`)
+        return true
     }
 
     async enableWhiteList(e) {
