@@ -7,7 +7,7 @@ const configPath = path.join(process.cwd(), 'plugins/San-plugin/data/daily_cron.
 const dailyConfigPath = path.join(process.cwd(), 'plugins/San-plugin/config/config.yaml');
 
 const DAILY_APIS = {
-    cdn: 'http://127.0.0.1:55608/api/v1/dayNews',
+    cdn: 'https://daily.kuro.ltd/api/v1/dayNews',
     tencent: 'http://43.139.184.14:55608/api/v1/dayNews'
 }
 
