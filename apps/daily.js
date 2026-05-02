@@ -7,7 +7,7 @@ const configPath = path.join(process.cwd(), 'plugins/San-plugin/data/daily_cron.
 const dailyConfigPath = path.join(process.cwd(), 'plugins/San-plugin/config/config.yaml');
 
 const DAILY_APIS = {
-    cdn: 'https://daily.kuro.ltd/api/v1/dayNews',
+    cdn: 'http://127.0.0.1:55608/api/v1/dayNews',
     tencent: 'http://43.139.184.14:55608/api/v1/dayNews'
 }
 
@@ -81,6 +81,24 @@ async function fetchDailyData() {
 // 白名单群列表（从文件读取）
 const Whitelist = [];
 const whiteListPath = path.join(process.cwd(), 'plugins/San-plugin/data/daily_whitelist.json');
+
+// 初始化白名单文件（不存在则生成默认空白名单）
+function initWhiteListFile() {
+    try {
+        if (!fs.existsSync(whiteListPath)) {
+            const dir = path.dirname(whiteListPath);
+            if (!fs.existsSync(dir)) {
+                fs.mkdirSync(dir, { recursive: true });
+            }
+            fs.writeFileSync(whiteListPath, JSON.stringify({ groups: [] }, null, 2));
+            logger.info(`[日报白名单] 未检测到白名单文件，已生成: ${whiteListPath}`);
+        }
+    } catch (e) {
+        logger.error('[日报白名单] 初始化白名单文件失败:', e);
+    }
+}
+
+initWhiteListFile();
 
 // 加载白名单
 function loadWhiteList() {
