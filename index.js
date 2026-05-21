@@ -13,7 +13,9 @@ logger.info('-------------------------');
 const initPath = [
   './plugins/San-plugin/resources/poke/api.yaml',
   "./data/San/face",
-  "./data/San/face/images"
+  "./data/San/face/images",
+  './plugins/San-plugin/config/config.yaml',
+  './plugins/San-plugin/data/daily_cron.json'
 ]
 for(let item of initPath){
   tool.checkPath(item)

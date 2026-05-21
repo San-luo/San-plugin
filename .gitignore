@@ -5,6 +5,7 @@
 /resources/AI/config/*.yaml
 /resources/poke/*
 /config/*.yaml
+/data/*
 
 #换行符处理
 * text=auto eol=lf
