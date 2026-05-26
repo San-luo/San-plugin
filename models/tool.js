@@ -8,6 +8,19 @@ import axios from 'axios';
 import common from '../../../lib/common/common.js';
 import config from '../../../lib/config/config.js'
 
+const fileLocks = {};
+
+export async function lockFile(filePath) {
+  while (fileLocks[filePath]) {
+    await new Promise(resolve => setTimeout(resolve, 10));
+  }
+  fileLocks[filePath] = true;
+}
+
+export async function unlockFile(filePath) {
+  delete fileLocks[filePath];
+}
+
 /**
  * 获取主人qq号
  * 返回number 类型
@@ -264,14 +277,17 @@ export function convertTime(input, direction) {
  */
 export async function JsonWrite(obj, filePath,creat = false) {
   try {
+    await lockFile(filePath);
     if (creat) {
       await checkPath(filePath)
     }
-    await fs.writeFile(filePath, JSON.stringify(obj, null, 2)); // 写入文件
+    await fs.writeFile(filePath, JSON.stringify(obj || {}, null, 2)); // 写入文件
   } catch (err) {
     if (err.code !== 'EEXIST') { // 如果不是目录已存在的错误，则记录错误
       logger.error(err);
     }
+  } finally {
+    unlockFile(filePath);
   }
 }
 
@@ -284,31 +300,33 @@ export async function JsonWrite(obj, filePath,creat = false) {
  * @return {Promise<Object>} 返回一个Promise对象，该对象在成功时解析为从JSON文件中读取并解析的对象，失败时则抛出错误。
  */
 export async function readFromJsonFile(filePath,create = false) {
-        if(create){
-            await checkPath(filePath)
-      }
+  await lockFile(filePath);
   try {
+    if(create){
+      await checkPath(filePath)
+    }
 
-    // 读取文件内容
     const data = await fs.readFile(filePath, 'utf8');
     
     if (data === '') {
-      //logger.warn('json文件为空');
-      return {}; // 或者你可以选择抛出一个新的错误
+      return {};
     }
 
-    // 解析JSON数据
     const obj = JSON.parse(data);
     return obj;
   } catch (err) {
     if (err.code === 'ENOENT') {
       logger.error('json文件不存在:', err);
+      return {};
     } else if (err instanceof SyntaxError) {
       logger.error('json转换错误:', err);
+      return {};
     } else {
       logger.error('读取json文件时发生错误:', err);
     }
-    throw err; // 将错误传递给调用者
+    throw err;
+  } finally {
+    unlockFile(filePath);
   }
 }
 
