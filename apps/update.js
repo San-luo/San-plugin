@@ -47,7 +47,6 @@ export class San extends plugin {
 
         /** 是否需要重启 */
         if (this.isUp) {
-            await this.reply('即将执行重启，以应用更新')
             setTimeout(() => this.restart(), 2000)
         }
     }
@@ -78,8 +77,6 @@ export class San extends plugin {
         }
 
         this.oldCommitId = await this.getcommitId(plugin)
-
-        await this.reply(`开始执行${type}操作...`)
         uping = true
         let ret = await this.execSync(cm)
         uping = false
