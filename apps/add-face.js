@@ -32,7 +32,7 @@ export class San_AddFace extends plugin {
                     fnc: 'addswitch'
                 },
                 {
-                    reg: '^#?(散|san|San)?表情(删除|删去|去除)(全部项(.*?))?$',
+                    reg: '^#?(散|san|San)?(表情)?(删除|删去|去除)(全部项)?(.*?)$',
                     fnc: 'deleteface'
                 },
                 {
@@ -213,12 +213,14 @@ export class San_AddFace extends plugin {
 
     async deleteface(e){
 
-        let reg = /^#?(散|san|San)?表情(删除|删去|去除)(全部项(.*?))?$/
+        let reg = /^#?(散|san|San)?(表情)?(删除|删去|去除)(全部项)?(.*?)$/
         const str = await tool.getText(e)
         const match = str.match(reg)
+        if (!match) return false
         //logger.info(match)
-        let isall = match[3] ? true : false
-        let facetag = match[4]//tag名  没有时为 ''
+        let isall = match[4] ? true : false
+        let facetag = (match[5] || '').trim()
+        if (!isall && facetag) isall = true
         let facelist = await getFaceData()
         let keys = Object.keys(facelist)
 
