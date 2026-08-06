@@ -228,15 +228,15 @@ export class San_AddFace extends plugin {
                 if(!tool.ismaster(e.user_id)){
 
                     e.reply("非主人无法删除表情包含的全部项")
-                    return//非主人尝试删除全部项
+                    return false//非主人尝试删除全部项
                 }
                     if (facetag == ''){
                         e.reply("需要删除的表情tag为空!")
-                        return//空tag
+                        return false//空tag
                     }
                   if (!(keys.includes(facetag))){
                         e.reply(`表情- ${facetag} - 不存在!`)
-                        return//不存在此表情tag
+                        return false//不存在此表情tag
                     }
             }
         
@@ -278,7 +278,7 @@ export class San_AddFace extends plugin {
                 }
                 if (!source){
                     e.reply("请引用消息来删除")
-                    return
+                    return false
                 }
                             let targetRand
             if(source.real_id){
@@ -322,6 +322,7 @@ export class San_AddFace extends plugin {
 
                 if (!foundAndDeleted) {
                   e.reply("没有找到该表情")
+                  return false
                 } else {
                     await tool.JsonWrite(obj,faceFile)
                     e.reply('已删除该项表情')
