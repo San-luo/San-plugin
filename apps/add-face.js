@@ -444,6 +444,10 @@ export class San_AddFace extends plugin {
     }
     //表情触发并回复
     async facereply(e){
+        //判断是否为机器人发送 避免自己无限回复
+        if (e.user_id == e.self_id) {
+            return false
+        }
         //判断目录 功能是否开启
         if (!fs.existsSync(faceFile) || !isAddOpen()) {
             return false
