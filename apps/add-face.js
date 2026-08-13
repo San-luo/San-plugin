@@ -276,6 +276,9 @@ export class San_AddFace extends plugin {
                       source = (await e.friend.getChatHistory(e.source.time, 1)).pop()
                     }
                 }
+                if (e.getReply) {
+                source = await e.getReply()   // ← sec协议走这里，返回完整消息对象
+                }
                 if (!source){
                     e.reply("请引用消息来删除")
                     return false
@@ -556,11 +559,17 @@ export class San_AddFace extends plugin {
             sendmsg = await e.reply(segment.video(face.videoFile))
         }//video消息处理完毕
          let Rand
+        logger.info(sendmsg)
         if(sendmsg?.data?.message_id){
             Rand = sendmsg.data.message_id// 目标rand值
+        }else if(sendmsg?.data?.[0]?.rand !== undefined){
+            Rand = sendmsg.data[0].rand ?? sendmsg.data[0].message_id// sec协议目标rand值
+        }else if(sendmsg?.data?.[0]?.message_id){
+            Rand = sendmsg.data[0].message_id// 目标rand值
         }else if(sendmsg?.rand){
             Rand = sendmsg.rand// 目标rand值
         }
+        logger.info(Rand)
 
         if ("rand" in face){
             if(face["rand"].length >= 5){
