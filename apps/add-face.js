@@ -107,6 +107,9 @@ export class San_AddFace extends plugin {
         }
         
         let msg = await tool.getText(e)
+        logger.info(msg)
+        logger.info(e.msg)
+        logger.info(e.message)
         let reg = /^#(全局)?(批量|连续|多个|持续)?添加\s*(.*)$/;// ^#(批量|连续|多个|持续)?添加.*$
 
         let match = msg.match(reg)
@@ -245,7 +248,7 @@ export class San_AddFace extends plugin {
         if (isall){
             //logger.info(facelist)
             for (let i of facelist[facetag].list ){
-                logger.info(i)
+                //logger.info(i)
                 if(i?.imageFile){
                     logger.info(i.imageFile)
                     try {
@@ -559,7 +562,7 @@ export class San_AddFace extends plugin {
             sendmsg = await e.reply(segment.video(face.videoFile))
         }//video消息处理完毕
          let Rand
-        logger.info(sendmsg)
+        //logger.info(sendmsg)
         if(sendmsg?.data?.message_id){
             Rand = sendmsg.data.message_id// 目标rand值
         }else if(sendmsg?.data?.[0]?.rand !== undefined){

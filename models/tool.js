@@ -591,24 +591,32 @@ export async function getText(e) {
 
   //前缀处理
   if(e.isGroup){
-    let botStyle = await  readFromJsonFile("package.json")
+    const botName = (await readFromJsonFile("package.json")).name
     let groupCfg
-    switch(botStyle.name){
-      case "trss-yunzai" || "TRSS-Yunzai":
-        let uin = (e?.self_id) ? e.self_id : Bot.uin.toString() 
-        groupCfg = config.getGroup( uin, e.group_id)
-        break;
-      case "miao-yunzai" || "Miao-Yunzai":
-        groupCfg = config.getGroup(e.group_id)
-        break;
+    if(botName === "trss-yunzai" || botName === "TRSS-Yunzai"){
+      const uin = e?.self_id ? e.self_id : Bot.uin.toString()
+      groupCfg = config.getGroup(uin, e.group_id)
+    } else if(botName === "miao-yunzai" || botName === "Miao-Yunzai"){
+      groupCfg = config.getGroup(e.group_id)
+    } else {
+      //默认按 trss 处理
+      const uin = e?.self_id ? e.self_id : Bot.uin.toString()
+      groupCfg = config.getGroup(uin, e.group_id)
     }
 
-    let Botalias = groupCfg.botAlias
-    let alias = [...Botalias]
+    const Botalias = groupCfg?.botAlias
+    let alias = Array.isArray(Botalias) ? [...Botalias]
+              : Botalias ? [Botalias]
+              : []
     alias.push(`{at:${e.self_id}}`)
+
     text = lodash.trimStart(text)
-    if (!Array.isArray(alias)) alias = [alias]
-    for (const name of alias) if (text.startsWith(name)) text = lodash.trimStart(text, name).trim()
+    for (const name of alias) {
+      if (text.startsWith(name)) {
+        text = text.slice(name.length).trim()
+        break
+      }
+    }
     return text
   }
   return text
