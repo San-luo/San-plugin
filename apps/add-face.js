@@ -530,10 +530,26 @@ export class San_AddFace extends plugin {
         let face = obj[msg].list[indexArr[randomIndex]]
         const matchType = face.type
 
-        let sendmsg 
+        let sendmsg
         //以下为iamge消息的处理
         if (matchType == "image") {
-            sendmsg = await e.reply([segment.image(face.imageFile)])
+            let imagePath = face.imageFile
+            //检测图片文件是否存在,不存在则尝试使用url下载到本地
+            if (!fs.existsSync(imagePath)) {
+                if (face.url) {
+                    logger.info(`图片文件 ${imagePath} 不存在,尝试从 url 下载: ${face.url}`)
+                    let ok = await tool.downloadFile(face.url, imagePath)
+                    if (!ok) {
+                        sendmsg = await e.reply(`表情图片不存在且url失效`)
+                        return true
+                    }
+                } else {
+                    logger.error(`图片文件 ${imagePath} 不存在且无 url 可用`)
+                    sendmsg = await e.reply(`表情图片文件丢失且无下载链接`)
+                    return true
+                }
+            }
+            sendmsg = await e.reply([segment.image(imagePath)])
         }//image消息处理完毕
 
         //以下为other消息的处理
