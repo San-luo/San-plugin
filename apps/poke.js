@@ -6,7 +6,7 @@ import https from 'https';
 const cfg_priority = await tool.set_priority("GroupPoke")
 //如果用户没有自定义api则使用默认api
 const DefaultApi =[
-    "https://api.ovoo.cc/api/cjm.php?",//柴郡猫
+    "https://sanluo.qzz.io/random?dir=砂狼白子&type=img",//砂狼白子
 ]
 export class San_Poke extends plugin {
     constructor() {
